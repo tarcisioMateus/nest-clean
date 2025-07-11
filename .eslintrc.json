@@ -4,5 +4,6 @@
   ],
   "rules": {
     "no-useless-constructor": "off"
+    //"no-explicit-any": true
   }
 }
