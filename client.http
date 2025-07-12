@@ -1,5 +1,5 @@
 @baseURL = http://localhost:3333
-
+@authToken = {{sing_in.response.body.token}}
 
 ###
 
@@ -10,7 +10,7 @@ Content-Type: application/json
 {
   "name": "John Doe",
   "email": "JohnDoe@example.com",
-  "password": "123456"
+  "password": "12345678"
 }
 
 ###
@@ -22,4 +22,17 @@ Content-Type: application/json
 {
   "email": "JohnDoe@example.com",
   "password": "12345678"
+}
+
+###
+
+# @name create_question
+POST {{baseURL}}/question
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "new question",
+  "content": "content of question"
+
 }
