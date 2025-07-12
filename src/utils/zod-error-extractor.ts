@@ -1,3 +1,5 @@
+import { ZodError } from 'zod'
+
 // Define the shape of the extracted error information
 interface FormattedErrorOutput {
   message: string
@@ -5,10 +7,10 @@ interface FormattedErrorOutput {
 }
 
 export function zodErrorExtractor(
-  rawInputString: string,
+  error: ZodError,
 ): FormattedErrorOutput | undefined {
   try {
-    const outerParsed = JSON.parse(rawInputString)
+    const outerParsed = JSON.parse(error.message)
 
     if (Array.isArray(outerParsed)) {
       const firstIssue = outerParsed[0]
