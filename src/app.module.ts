@@ -3,6 +3,8 @@ import { PrismaService } from './prisma/prisma.service'
 import { SingUpController } from './controllers/sing-up.controller'
 import { ConfigModule } from '@nestjs/config'
 import { envSchema } from './env'
+import { AuthModule } from './auth/auth.module'
+import { SingInController } from './controllers/sing-in.controller'
 
 @Module({
   imports: [
@@ -10,8 +12,9 @@ import { envSchema } from './env'
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
     }),
+    AuthModule,
   ],
-  controllers: [SingUpController],
+  controllers: [SingUpController, SingInController],
   providers: [PrismaService],
 })
 export class AppModule {}
