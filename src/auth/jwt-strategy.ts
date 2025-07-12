@@ -8,7 +8,7 @@ import { z } from 'zod'
 const userPayloadSchema = z.object({
   sub: z.uuid(),
 })
-type UserPayload = z.infer<typeof userPayloadSchema>
+export type UserPayload = z.infer<typeof userPayloadSchema>
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
