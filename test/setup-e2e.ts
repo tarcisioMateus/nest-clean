@@ -19,14 +19,14 @@ function generateDatabaseUrl(schema: string) {
 
 const schema = randomUUID()
 
-beforeAll(async() => {
+beforeAll(async () => {
   process.env.DATABASE_URL = generateDatabaseUrl(schema)
 
   execSync('npx prisma migrate deploy')
 })
 
-afterAll(async() => {
-  await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`,)
+afterAll(async () => {
+  await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`)
 
   await prisma.$disconnect()
 })
