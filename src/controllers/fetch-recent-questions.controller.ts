@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Query, Get } from '@nestjs/common'
+import { Controller, UseGuards, Query, Get, HttpCode } from '@nestjs/common'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
 import { AuthGuard } from '@nestjs/passport'
@@ -22,6 +22,7 @@ export class FetchRecentQuestionsController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
+  @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   async execute(
     @Query('page', zodPageQueryValidationPipe) page: PageQuerySchema,
