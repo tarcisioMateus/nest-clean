@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "11.0.1",
     "@prisma/client": "6.11.1",
     "bcryptjs": "3.0.2",
+    "dayjs": "1.11.13",
     "multer": "2.0.1",
     "passport-jwt": "4.0.1",
     "reflect-metadata": "0.2.2",
@@ -35,6 +36,7 @@
     "zod": "4.0.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "9.9.0",
     "@nestjs/cli": "11.0.0",
     "@nestjs/schematics": "11.0.0",
     "@nestjs/testing": "11.0.1",
