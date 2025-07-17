@@ -2,6 +2,8 @@ import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memo
 import { CreateQuestionUseCase } from './create-question'
 import { InMemoryQuestionsRepository } from 'test/repositories/in-memory-questions-repository'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { makeQuestion } from 'test/factories/make-question'
+import { UnavailableCredentialsError } from './errors/unavailable-credentials-error'
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
@@ -48,5 +50,20 @@ describe('Create Question', () => {
         expect.objectContaining({ attachmentId: new UniqueEntityID('1') }),
       )
     }
+  })
+
+  it('should NOT be able to create 2 questions with same title/slug', async () => {
+    const question = makeQuestion({ title: 'question 1' })
+
+    await inMemoryQuestionsRepository.create(question)
+
+    const response = await sut.execute({
+      title: question.title,
+      authorId: '1',
+      content: 'New question',
+    })
+
+    expect(response.isLeft()).toBeTruthy()
+    expect(response.value).toBeInstanceOf(UnavailableCredentialsError)
   })
 })

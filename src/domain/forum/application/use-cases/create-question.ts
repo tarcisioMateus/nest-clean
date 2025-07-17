@@ -1,10 +1,12 @@
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { Question } from '../../enterprise/entities/question'
 import { QuestionsRepository } from '../repositories/questions-repository'
-import { Either, right } from '@/core/either'
+import { Either, left, right } from '@/core/either'
 import { Optional } from '@/core/types/optional'
 import { QuestionAttachment } from '../../enterprise/entities/question-attachment'
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
+import { Injectable } from '@nestjs/common'
+import { UnavailableCredentialsError } from './errors/unavailable-credentials-error'
 
 interface CreateQuestionUseCaseRequest {
   authorId: string
@@ -14,12 +16,13 @@ interface CreateQuestionUseCaseRequest {
 }
 
 type CreateQuestionUseCaseResponse = Either<
-  null,
+  UnavailableCredentialsError,
   {
     question: Question
   }
 >
 
+@Injectable()
 export class CreateQuestionUseCase {
   constructor(private questionsRepository: QuestionsRepository) {}
 
@@ -37,6 +40,16 @@ export class CreateQuestionUseCase {
       authorId: new UniqueEntityID(authorId),
       title,
     })
+
+    const questionWithSlug = await this.questionsRepository.findBySlug(
+      question.slug,
+    )
+
+    if (questionWithSlug) {
+      return left(
+        new UnavailableCredentialsError("'please change your question title!'"),
+      )
+    }
 
     const questionAttachments: QuestionAttachment[] = attachmentsId.map(
       (attachmentId) =>

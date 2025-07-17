@@ -1,14 +1,21 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Post,
+  UseGuards,
+} from '@nestjs/common'
 import { z } from 'zod'
 import { AuthGuard } from '@nestjs/passport'
 import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt-strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
   content: z.string(),
+  attachmentsId: z.array(z.uuid()).optional().default([]),
 })
 
 type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
@@ -19,7 +26,7 @@ const zodValidationPipe = new ZodValidationPipe<CreateQuestionBodySchema>(
 
 @Controller('/question')
 export class CreateQuestionController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly createQuestionUseCase: CreateQuestionUseCase) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -27,11 +34,18 @@ export class CreateQuestionController {
     @CurrentUser() user: UserPayload,
     @Body(zodValidationPipe) body: CreateQuestionBodySchema,
   ) {
-    const { title, content } = body
+    const { title, content, attachmentsId } = body
     const userId = user.sub
 
-    await this.prisma.question.create({
-      data: { content, title, authorId: userId, slug: title },
+    const response = await this.createQuestionUseCase.execute({
+      authorId: userId,
+      content,
+      title,
+      attachmentsId,
     })
+
+    if (response.isLeft()) {
+      throw new ConflictException(response.value.message)
+    }
   }
 }
