@@ -3,11 +3,12 @@ import { Test } from '@nestjs/testing'
 import { INestApplication } from '@nestjs/common'
 import { AppModule } from '@/infra/app.module'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { hash } from 'bcryptjs'
+import { HashGenerator } from '@/domain/forum/application/cryptography/hash-generator'
 
 describe('Sing Ip E2E', () => {
   let app: INestApplication
   let prisma: PrismaService
+  let hashGenerator: HashGenerator
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -16,6 +17,7 @@ describe('Sing Ip E2E', () => {
 
     app = moduleRef.createNestApplication()
     prisma = moduleRef.get(PrismaService)
+    hashGenerator = moduleRef.get(HashGenerator)
     await app.init()
   })
 
@@ -29,7 +31,7 @@ describe('Sing Ip E2E', () => {
     const password = '12345678'
 
     await prisma.user.create({
-      data: { name, email, password: await hash(password, 8) },
+      data: { name, email, password: await hashGenerator.hash(password) },
     })
 
     const response = await request(app.getHttpServer()).post('/sing-in').send({

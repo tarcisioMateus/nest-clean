@@ -5,11 +5,9 @@ import {
   UnauthorizedException,
   UsePipes,
 } from '@nestjs/common'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { compare } from 'bcryptjs'
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { JwtService } from '@nestjs/jwt'
+import { CreateSessionUseCase } from '@/domain/forum/application/use-cases/create-session'
 
 const singInBodySchema = z.object({
   email: z.email().trim(),
@@ -20,31 +18,20 @@ type SingInBodySchema = z.infer<typeof singInBodySchema>
 
 @Controller('/sing-in')
 export class SingInController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
-  ) {}
+  constructor(private readonly createSession: CreateSessionUseCase) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe<SingInBodySchema>(singInBodySchema))
   async execute(@Body() body: SingInBodySchema) {
     const { email, password } = body
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    })
+    const response = await this.createSession.execute({ email, password })
 
-    if (!user) {
-      throw new UnauthorizedException('credentials Error')
+    if (response.isLeft()) {
+      throw new UnauthorizedException(response.value.message)
     }
 
-    const passwordMatch = await compare(password, user.password)
-
-    if (!passwordMatch) {
-      throw new UnauthorizedException('credentials Error')
-    }
-
-    const token = this.jwt.sign({ sub: user.id })
+    const { token } = response.value
 
     return { token }
   }

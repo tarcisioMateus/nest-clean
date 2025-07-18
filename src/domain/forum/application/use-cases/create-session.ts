@@ -3,6 +3,7 @@ import { Either, right, left } from '@/core/either'
 import { CredentialsError } from './errors/credentials-error'
 import { HashCompare } from '../cryptography/hash-compare'
 import { Encrypter } from '../cryptography/encrypter'
+import { Injectable } from '@nestjs/common'
 
 interface CreateSessionUseCaseRequest {
   email: string
@@ -16,6 +17,7 @@ type CreateSessionUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class CreateSessionUseCase {
   constructor(
     private studentsRepository: StudentsRepository,
