@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
@@ -8,6 +9,7 @@ import {
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { CreateSessionUseCase } from '@/domain/forum/application/use-cases/create-session'
+import { CredentialsError } from '@/domain/forum/application/use-cases/errors/credentials-error'
 
 const singInBodySchema = z.object({
   email: z.email().trim(),
@@ -28,7 +30,14 @@ export class SingInController {
     const response = await this.createSession.execute({ email, password })
 
     if (response.isLeft()) {
-      throw new UnauthorizedException(response.value.message)
+      const error = response.value
+
+      switch (error.constructor) {
+        case CredentialsError:
+          throw new UnauthorizedException(response.value.message)
+        default:
+          throw new BadRequestException(response.value.message)
+      }
     }
 
     const { token } = response.value

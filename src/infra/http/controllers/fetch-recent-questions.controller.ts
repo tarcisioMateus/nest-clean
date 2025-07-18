@@ -40,7 +40,7 @@ export class FetchRecentQuestionsController {
     const response = await this.fetchRecentQuestions.execute({ page })
 
     if (response.isLeft()) {
-      return new BadRequestException(response.value.message)
+      throw new BadRequestException(response.value.message)
     }
 
     const questions = response.value.questions.map(QuestionPresenter.toHttp)

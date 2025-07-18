@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -7,7 +8,9 @@ import {
 } from '@nestjs/common'
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+
 import { RegisterStudentUseCase } from '@/domain/forum/application/use-cases/register-student'
+import { UnavailableCredentialsError } from '@/domain/forum/application/use-cases/errors/unavailable-credentials-error'
 
 const singUpBodySchema = z.object({
   name: z.string(),
@@ -33,7 +36,14 @@ export class SingUpController {
     })
 
     if (response.isLeft()) {
-      throw new ConflictException(response.value.message)
+      const error = response.value
+
+      switch (error.constructor) {
+        case UnavailableCredentialsError:
+          throw new ConflictException(response.value.message)
+        default:
+          throw new BadRequestException(response.value.message)
+      }
     }
   }
 }

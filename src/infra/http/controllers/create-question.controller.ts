@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -11,6 +12,7 @@ import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt-strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
+import { UnavailableCredentialsError } from '@/domain/forum/application/use-cases/errors/unavailable-credentials-error'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -45,7 +47,15 @@ export class CreateQuestionController {
     })
 
     if (response.isLeft()) {
-      throw new ConflictException(response.value.message)
+      const error = response.value
+
+      switch (error.constructor) {
+        case UnavailableCredentialsError:
+          throw new ConflictException(response.value.message)
+
+        default:
+          throw new BadRequestException(response.value.message)
+      }
     }
   }
 }
