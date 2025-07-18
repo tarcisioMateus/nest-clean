@@ -11,6 +11,7 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 
 import { RegisterStudentUseCase } from '@/domain/forum/application/use-cases/register-student'
 import { UnavailableCredentialsError } from '@/domain/forum/application/use-cases/errors/unavailable-credentials-error'
+import { Public } from '@/infra/auth/public'
 
 const singUpBodySchema = z.object({
   name: z.string(),
@@ -24,6 +25,7 @@ type SingUpBodySchema = z.infer<typeof singUpBodySchema>
 export class SingUpController {
   constructor(private readonly registerStudent: RegisterStudentUseCase) {}
 
+  @Public()
   @Post()
   @UsePipes(new ZodValidationPipe<SingUpBodySchema>(singUpBodySchema))
   async execute(@Body() body: SingUpBodySchema) {

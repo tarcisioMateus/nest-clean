@@ -4,10 +4,8 @@ import {
   ConflictException,
   Controller,
   Post,
-  UseGuards,
 } from '@nestjs/common'
 import { z } from 'zod'
-import { AuthGuard } from '@nestjs/passport'
 import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt-strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
@@ -31,7 +29,6 @@ export class CreateQuestionController {
   constructor(private readonly createQuestion: CreateQuestionUseCase) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
   async execute(
     @CurrentUser() user: UserPayload,
     @Body(zodValidationPipe) body: CreateQuestionBodySchema,

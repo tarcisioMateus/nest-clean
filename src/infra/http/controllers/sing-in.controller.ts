@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { CreateSessionUseCase } from '@/domain/forum/application/use-cases/create-session'
 import { CredentialsError } from '@/domain/forum/application/use-cases/errors/credentials-error'
+import { Public } from '@/infra/auth/public'
 
 const singInBodySchema = z.object({
   email: z.email().trim(),
@@ -22,6 +23,7 @@ type SingInBodySchema = z.infer<typeof singInBodySchema>
 export class SingInController {
   constructor(private readonly createSession: CreateSessionUseCase) {}
 
+  @Public()
   @Post()
   @UsePipes(new ZodValidationPipe<SingInBodySchema>(singInBodySchema))
   async execute(@Body() body: SingInBodySchema) {
