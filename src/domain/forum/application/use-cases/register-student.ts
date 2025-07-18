@@ -3,6 +3,7 @@ import { StudentsRepository } from '../repositories/students-repository'
 import { Either, right, left } from '@/core/either'
 import { UnavailableCredentialsError } from './errors/unavailable-credentials-error'
 import { HashGenerator } from '../cryptography/hash-generator'
+import { Injectable } from '@nestjs/common'
 
 interface RegisterStudentUseCaseRequest {
   name: string
@@ -17,6 +18,7 @@ type RegisterStudentUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class RegisterStudentUseCase {
   constructor(
     private studentsRepository: StudentsRepository,

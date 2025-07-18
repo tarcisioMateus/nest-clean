@@ -24,7 +24,6 @@ import { StudentsRepository } from '@/domain/forum/application/repositories/stud
     PrismaQuestionCommentsRepository,
   ],
   exports: [
-    PrismaService,
     StudentsRepository,
     PrismaAnswerAttachmentsRepository,
     PrismaAnswerCommentsRepository,

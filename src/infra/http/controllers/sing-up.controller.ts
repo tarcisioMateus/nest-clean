@@ -5,10 +5,9 @@ import {
   Post,
   UsePipes,
 } from '@nestjs/common'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { hash } from 'bcryptjs'
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+import { RegisterStudentUseCase } from '@/domain/forum/application/use-cases/register-student'
 
 const singUpBodySchema = z.object({
   name: z.string(),
@@ -20,25 +19,21 @@ type SingUpBodySchema = z.infer<typeof singUpBodySchema>
 
 @Controller('/sing-up')
 export class SingUpController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly registerStudent: RegisterStudentUseCase) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe<SingUpBodySchema>(singUpBodySchema))
   async execute(@Body() body: SingUpBodySchema) {
     const { name, email, password } = body
 
-    const userWithEmail = await this.prisma.user.findUnique({
-      where: { email },
+    const response = await this.registerStudent.execute({
+      name,
+      email,
+      password,
     })
 
-    if (userWithEmail) {
-      throw new ConflictException('email unavailable')
+    if (response.isLeft()) {
+      throw new ConflictException(response.value.message)
     }
-
-    const hashedPassword = await hash(password, 8)
-
-    await this.prisma.user.create({
-      data: { name, email, password: hashedPassword },
-    })
   }
 }
