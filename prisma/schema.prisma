@@ -25,40 +25,83 @@ model User {
   password String
   role     UserRole @default(STUDENT)
 
-  questions Question[]
-  answers   Answer[]
+  questions  Question[]
+  answers    Answer[]
+  Comment    Comment[]
+  Attachment Attachment[]
 
   @@map("users")
 }
 
 model Question {
-  id           String    @id @default(uuid())
-  title        String
-  slug         String    @unique
-  content      String
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime? @updatedAt @map("updated_at")
-  authorId     String    @map("author_id")
-  bestAnswerId String?   @unique @map("best_answer_id")
+  id        String    @id @default(uuid())
+  title     String
+  slug      String    @unique
+  content   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
 
-  author     User     @relation(fields: [authorId], references: [id])
-  bestAnswer Answer?  @relation("bestAnswer", fields: [bestAnswerId], references: [id])
-  answers    Answer[]
+  authorId     String  @map("author_id")
+  bestAnswerId String? @unique @map("best_answer_id")
+
+  author      User         @relation(fields: [authorId], references: [id])
+  bestAnswer  Answer?      @relation("bestAnswer", fields: [bestAnswerId], references: [id])
+  answers     Answer[]
+  comments    Comment[]
+  attachments Attachment[]
 
   @@map("questions")
 }
 
 model Answer {
-  id         String    @id @default(uuid())
-  content    String
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime? @updatedAt @map("updated_at")
-  authorId   String    @map("author_id")
-  questionId String    @map("question_id")
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
 
-  author       User      @relation(fields: [authorId], references: [id])
-  bestAnswerOn Question? @relation("bestAnswer")
-  Question     Question @relation(fields: [questionId], references: [id])
+  authorId   String @map("author_id")
+  questionId String @map("question_id")
+
+  author       User         @relation(fields: [authorId], references: [id])
+  Question     Question     @relation(fields: [questionId], references: [id])
+  bestAnswerOn Question?    @relation("bestAnswer")
+  comments     Comment[]
+  attachments  Attachment[]
 
   @@map("answers")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  authorId   String  @map("author_id")
+  questionId String? @map("answer_id")
+  answerId   String? @map("question_id")
+
+  author   User      @relation(fields: [authorId], references: [id])
+  Question Question? @relation(fields: [questionId], references: [id])
+  Answer   Answer?   @relation(fields: [answerId], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id        String    @id @default(uuid())
+  title     String
+  link      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  authorId   String  @map("author_id")
+  questionId String? @map("answer_id")
+  answerId   String? @map("question_id")
+
+  author   User      @relation(fields: [authorId], references: [id])
+  Question Question? @relation(fields: [questionId], references: [id])
+  Answer   Answer?   @relation(fields: [answerId], references: [id])
+
+  @@map("Attachments")
 }
