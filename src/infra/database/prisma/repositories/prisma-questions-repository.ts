@@ -63,6 +63,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
   }
 
   async delete(question: Question): Promise<void> {
-    await this.prisma.question.delete({ where: { id: question.id.toString() } })
+    await this.prisma.question.delete({
+      where: { id: question.id.toString() },
+    })
   }
 }
