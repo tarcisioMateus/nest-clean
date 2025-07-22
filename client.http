@@ -1,5 +1,6 @@
 @baseURL = http://localhost:3333
 @authToken = {{sing_in.response.body.token}}
+@questionId = {{fetch_recent_question.response.body.questions[0].id}}
 
 ###
 
@@ -33,7 +34,8 @@ Authorization: Bearer {{authToken}}
 
 {
   "title": "new question 7",
-  "content": "content of question"
+  "content": "content of question",
+  "attachmentsId": []
 }
 
 ###
@@ -43,11 +45,23 @@ GET  {{baseURL}}/question?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
-
 ###
 
 # @name get_question_by_slug
 GET  {{baseURL}}/question/new Question 7
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+###
+
+# @name edit_question
+POST   {{baseURL}}/question/{{questionId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "edited question",
+  "content": "edited content",
+  "attachmentsId": []
+}
 

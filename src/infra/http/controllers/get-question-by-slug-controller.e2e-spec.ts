@@ -38,7 +38,6 @@ describe('get Question by slug E2E', () => {
     const question = await questionFactory.makePrismaQuestion({
       authorId: student.id,
     })
-    console.log(question.slug.value)
 
     const response = await request(app.getHttpServer())
       .get(`/question/${question.slug.value}`)
