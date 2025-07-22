@@ -21,7 +21,7 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 const editQuestionBodySchema = z.object({
   title: z.string(),
   content: z.string(),
-  attachmentsId: z.array(z.uuid()),
+  attachmentsId: z.array(z.uuid()).optional().default([]),
 })
 
 type EditQuestionBodySchema = z.infer<typeof editQuestionBodySchema>

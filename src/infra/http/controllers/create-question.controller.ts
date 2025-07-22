@@ -15,7 +15,7 @@ import { UnavailableCredentialsError } from '@/domain/forum/application/use-case
 const createQuestionBodySchema = z.object({
   title: z.string(),
   content: z.string(),
-  attachmentsId: z.array(z.uuid()),
+  attachmentsId: z.array(z.uuid()).optional().default([]),
 })
 
 type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>

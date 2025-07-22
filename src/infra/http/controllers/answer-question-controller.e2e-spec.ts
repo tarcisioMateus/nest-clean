@@ -8,7 +8,7 @@ import { DatabaseModule } from '@/infra/database/database.module'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { QuestionFactory } from 'test/factories/make-question'
 
-describe('Edit Question E2E', () => {
+describe('Answer Question E2E', () => {
   let app: INestApplication
   let jwt: JwtService
   let prisma: PrismaService
@@ -33,7 +33,7 @@ describe('Edit Question E2E', () => {
     await app.close()
   })
 
-  test('POST/question/:id e2e', async () => {
+  test('POST/answer/:questionId e2e', async () => {
     const student = await studentFactory.makePrismaStudent()
 
     const token = jwt.sign({ sub: student.id.toString() })
@@ -43,22 +43,16 @@ describe('Edit Question E2E', () => {
     })
 
     const response = await request(app.getHttpServer())
-      .post(`/question/${question.id.toString()}`)
+      .post(`/answer/${question.id.toString()}`)
       .set('Authorization', `Bearer ${token}`)
       .send({
-        title: 'question 01',
         content: 'content',
       })
 
-    expect(response.statusCode).toBe(204)
-    const updatedQuestion = await prisma.question.findUnique({
-      where: { id: question.id.toString() },
+    expect(response.statusCode).toBe(201)
+    const answer = await prisma.answer.findFirst({
+      where: { content: 'content' },
     })
-    expect(updatedQuestion).toEqual(
-      expect.objectContaining({
-        content: 'content',
-        title: 'question 01',
-      }),
-    )
+    expect(answer).toBeTruthy()
   })
 })
