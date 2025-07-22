@@ -47,7 +47,7 @@ export class AnswerQuestionController {
     })
 
     if (response.isLeft()) {
-      throw new BadRequestException()
+      throw new BadRequestException(response.value.message)
     }
   }
 }

@@ -63,7 +63,7 @@ model Answer {
   questionId String @map("question_id")
 
   author       User         @relation(fields: [authorId], references: [id])
-  Question     Question     @relation(fields: [questionId], references: [id])
+  Question     Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
   bestAnswerOn Question?    @relation("bestAnswer")
   comments     Comment[]
   attachments  Attachment[]
@@ -82,8 +82,8 @@ model Comment {
   answerId   String? @map("question_id")
 
   author   User      @relation(fields: [authorId], references: [id])
-  Question Question? @relation(fields: [questionId], references: [id])
-  Answer   Answer?   @relation(fields: [answerId], references: [id])
+  Question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  Answer   Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
@@ -100,8 +100,8 @@ model Attachment {
   answerId   String? @map("question_id")
 
   author   User      @relation(fields: [authorId], references: [id])
-  Question Question? @relation(fields: [questionId], references: [id])
-  Answer   Answer?   @relation(fields: [answerId], references: [id])
+  Question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  Answer   Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
 
   @@map("Attachments")
 }
