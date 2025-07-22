@@ -4,6 +4,9 @@ import {
   Question,
   QuestionProps,
 } from '@/domain/forum/enterprise/entities/question'
+import { Injectable } from '@nestjs/common'
+import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { PrismaQuestionMapper } from '@/infra/database/prisma/mapper/prisma-question-mapper'
 
 export function makeQuestion(
   override: Partial<QuestionProps> = {},
@@ -20,4 +23,22 @@ export function makeQuestion(
   )
 
   return question
+}
+
+@Injectable()
+export class QuestionFactory {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async makePrismaQuestion(
+    override: Partial<QuestionProps> = {},
+    id?: UniqueEntityID,
+  ): Promise<Question> {
+    const question = makeQuestion(override, id)
+
+    await this.prisma.question.create({
+      data: PrismaQuestionMapper.toPersistence(question),
+    })
+
+    return question
+  }
 }

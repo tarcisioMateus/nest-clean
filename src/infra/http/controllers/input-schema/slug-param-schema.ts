@@ -19,8 +19,6 @@ export const slugParamSchema = z
   .pipe(
     z
       .string()
-      .min(3, 'Slug must be at least 3 characters long after transformation.')
-      .max(50, 'Slug must be at most 50 characters long after transformation.')
       .regex(
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
         'Transformed slug must be lowercase, alphanumeric, and use hyphens for spaces. No consecutive hyphens, leading/trailing hyphens, or special characters.',

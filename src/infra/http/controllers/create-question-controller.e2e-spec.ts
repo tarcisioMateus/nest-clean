@@ -2,23 +2,27 @@ import request from 'supertest'
 import { Test } from '@nestjs/testing'
 import { INestApplication } from '@nestjs/common'
 import { AppModule } from '@/infra/app.module'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { hash } from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
+import { StudentFactory } from 'test/factories/make-student'
+import { DatabaseModule } from '@/infra/database/database.module'
+import { PrismaService } from '@/infra/database/prisma/prisma.service'
 
 describe('Create Question E2E', () => {
   let app: INestApplication
-  let prisma: PrismaService
   let jwt: JwtService
+  let prisma: PrismaService
+  let studentFactory: StudentFactory
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, DatabaseModule],
+      providers: [StudentFactory],
     }).compile()
 
     app = moduleRef.createNestApplication()
-    prisma = moduleRef.get(PrismaService)
+    studentFactory = moduleRef.get(StudentFactory)
     jwt = moduleRef.get(JwtService)
+    prisma = moduleRef.get(PrismaService)
     await app.init()
   })
 
@@ -27,24 +31,22 @@ describe('Create Question E2E', () => {
   })
 
   test('POST/question e2e', async () => {
-    const name = 'John Doe'
-    const email = 'JohnDoe@email.com'
-    const password = '12345678'
+    const student = await studentFactory.makePrismaStudent()
 
-    const user = await prisma.user.create({
-      data: { name, email, password: await hash(password, 8) },
-    })
-
-    const token = jwt.sign({ sub: user.id })
+    const token = jwt.sign({ sub: student.id.toString() })
 
     const response = await request(app.getHttpServer())
       .post('/question')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        title: 'question-01',
+        title: 'question 01',
         content: 'content',
       })
 
     expect(response.statusCode).toBe(201)
+    const question = await prisma.question.findFirst({
+      where: { title: 'question 01' },
+    })
+    expect(question).toBeTruthy()
   })
 })
