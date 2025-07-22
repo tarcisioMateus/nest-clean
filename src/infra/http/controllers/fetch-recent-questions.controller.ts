@@ -10,17 +10,17 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
 import { QuestionPresenter } from '../presenter/question-presenter'
 
-const PageQuerySchema = z
+const pageQuerySchema = z
   .string()
   .optional()
   .default('1')
   .transform(Number)
   .pipe(z.number().min(1))
 
-type PageQuerySchema = z.infer<typeof PageQuerySchema>
+type PageQuerySchema = z.infer<typeof pageQuerySchema>
 
 const zodPageQueryValidationPipe = new ZodValidationPipe<PageQuerySchema>(
-  PageQuerySchema,
+  pageQuerySchema,
 )
 
 @Controller('/question')
