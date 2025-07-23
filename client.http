@@ -1,7 +1,7 @@
 @baseURL = http://localhost:3333
 @authToken = {{sing_in.response.body.token}}
 @questionId = {{fetch_recent_question.response.body.questions[0].id}}
-@answerId = {{}}
+@answerId = {{fetch_question_answers.response.body.answers[0].id}}
 
 ###
 
@@ -85,7 +85,6 @@ Authorization: Bearer {{authToken}}
   "attachmentsId": []
 }
 
-
 ###
 
 # @name edit_answer
@@ -104,3 +103,11 @@ Authorization: Bearer {{authToken}}
 DELETE   {{baseURL}}/answer/{{answerId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+###
+
+# @name fetch_question_answers
+GET  {{baseURL}}/question/{{questionId}}/answers
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
