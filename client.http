@@ -3,6 +3,8 @@
 @questionId = {{fetch_recent_question.response.body.questions[0].id}}
 @answerId = {{fetch_question_answers.response.body.answers[0].id}}
 @questionCommentId = {{fetch_question_comments.response.body.comments[0].id}}
+@answerCommentId = {{fetch_answer_comments.response.body.comments[0].id}}
+
 ###
 
 # @name sing_up
@@ -151,6 +153,20 @@ Authorization: Bearer {{authToken}}
 
 # @name fetch_question_comments
 GET  {{baseURL}}/question/{{questionId}}/comments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name delete_answer_comment
+DELETE   {{baseURL}}/answer/comment/{{answerCommentId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name fetch_answer_comments
+GET  {{baseURL}}/answer/{{answerId}}/comments
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 

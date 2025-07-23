@@ -8,6 +8,7 @@ import { Optional } from '@/core/types/optional'
 import { AnswerComment } from '../../enterprise/entities/answer-comment'
 import { Either, left, right } from '@/core/either'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
+import { Injectable } from '@nestjs/common'
 
 interface FetchAnswerCommentsUseCaseRequest extends PaginationParams {
   answerId: string
@@ -20,6 +21,7 @@ type FetchAnswerCommentsUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class FetchAnswerCommentsUseCase {
   constructor(private answerCommentsRepository: AnswerCommentsRepository) {}
 
