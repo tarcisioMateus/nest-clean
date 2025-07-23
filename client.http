@@ -2,7 +2,7 @@
 @authToken = {{sing_in.response.body.token}}
 @questionId = {{fetch_recent_question.response.body.questions[0].id}}
 @answerId = {{fetch_question_answers.response.body.answers[0].id}}
-@questionCommentId = {{}}
+@questionCommentId = {{fetch_question_comments.response.body.comments[0].id}}
 ###
 
 # @name sing_up
@@ -143,9 +143,15 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name delete_question_comment
-DELETE   {{baseURL}}/question/comment{{questionCommentId}}
+DELETE   {{baseURL}}/question/comment/{{questionCommentId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 ###
 
+# @name fetch_question_comments
+GET  {{baseURL}}/question/{{questionId}}/comments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
