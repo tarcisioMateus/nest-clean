@@ -33,7 +33,7 @@ describe('Answer Question E2E', () => {
     await app.close()
   })
 
-  test('POST/answer/:questionId e2e', async () => {
+  test('POST/question/:questionId/answer e2e', async () => {
     const student = await studentFactory.makePrismaStudent()
 
     const token = jwt.sign({ sub: student.id.toString() })
@@ -43,7 +43,7 @@ describe('Answer Question E2E', () => {
     })
 
     const response = await request(app.getHttpServer())
-      .post(`/answer/${question.id.toString()}`)
+      .post(`/question/${question.id.toString()}/answer`)
       .set('Authorization', `Bearer ${token}`)
       .send({
         content: 'content',

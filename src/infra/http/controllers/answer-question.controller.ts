@@ -26,7 +26,7 @@ const zodValidationPipe = new ZodValidationPipe<AnswerQuestionBodySchema>(
   answerQuestionBodySchema,
 )
 
-@Controller('/answer/:questionId')
+@Controller('/question/:questionId/answer')
 export class AnswerQuestionController {
   constructor(private readonly answerQuestion: AnswerQuestionUseCase) {}
 

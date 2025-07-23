@@ -11,45 +11,43 @@ import { z } from 'zod'
 import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt-strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { EditQuestionUseCase } from '@/domain/forum/application/use-cases/edit-question'
+import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer'
 import {
   IdParamSchema,
   zodIdParamValidationPipe,
 } from './input-schema/id-param-schema'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 
-const editQuestionBodySchema = z.object({
-  title: z.string(),
+const editAnswerBodySchema = z.object({
   content: z.string(),
   attachmentsId: z.array(z.uuid()).optional().default([]),
 })
 
-type EditQuestionBodySchema = z.infer<typeof editQuestionBodySchema>
+type EditAnswerBodySchema = z.infer<typeof editAnswerBodySchema>
 
-const zodBodyValidationPipe = new ZodValidationPipe<EditQuestionBodySchema>(
-  editQuestionBodySchema,
+const zodBodyValidationPipe = new ZodValidationPipe<EditAnswerBodySchema>(
+  editAnswerBodySchema,
 )
 
-@Controller('/question/:id')
-export class EditQuestionController {
-  constructor(private readonly editQuestion: EditQuestionUseCase) {}
+@Controller('/answer/:id')
+export class EditAnswerController {
+  constructor(private readonly editAnswer: EditAnswerUseCase) {}
 
   @Put()
   @HttpCode(204)
   async execute(
     @CurrentUser() user: UserPayload,
-    @Param('id', zodIdParamValidationPipe) questionId: IdParamSchema,
-    @Body(zodBodyValidationPipe) body: EditQuestionBodySchema,
+    @Param('id', zodIdParamValidationPipe) answerId: IdParamSchema,
+    @Body(zodBodyValidationPipe) body: EditAnswerBodySchema,
   ) {
-    const { title, content, attachmentsId } = body
+    const { content, attachmentsId } = body
     const userId = user.sub
 
-    const response = await this.editQuestion.execute({
+    const response = await this.editAnswer.execute({
       authorId: userId,
       content,
-      title,
       attachmentsId,
-      questionId,
+      answerId,
     })
 
     if (response.isLeft()) {

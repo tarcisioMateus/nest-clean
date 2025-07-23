@@ -1,6 +1,6 @@
 @baseURL = http://localhost:3333
 @authToken = {{sing_in.response.body.token}}
-@questionId = {{fetch_recent_question.response.body.questions[1].id}}
+@questionId = {{fetch_recent_question.response.body.questions[0].id}}
 
 ###
 
@@ -55,7 +55,7 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name edit_question
-POST   {{baseURL}}/question/{{questionId}}
+PUT   {{baseURL}}/question/{{questionId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -75,7 +75,7 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name answer_question
-POST   {{baseURL}}/answer/{{questionId}}
+POST   {{baseURL}}/question/{{questionId}}/answer
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
