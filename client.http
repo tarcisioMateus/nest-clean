@@ -131,4 +131,14 @@ Authorization: Bearer {{authToken}}
 
 ###
 
+# @name comment_on_answer
+POST   {{baseURL}}/answer/{{answerId}}/comment
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "content": "comment on answer"
+}
+
+###
 
