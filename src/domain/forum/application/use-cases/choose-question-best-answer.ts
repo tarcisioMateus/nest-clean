@@ -4,6 +4,7 @@ import { QuestionsRepository } from '../repositories/questions-repository'
 import { Either, left, right } from '@/core/either'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
+import { Injectable } from '@nestjs/common'
 
 interface ChooseQuestionBestAnswerUseCaseRequest {
   answerId: string
@@ -15,6 +16,7 @@ type ChooseQuestionBestAnswerUseCaseResponse = Either<
   null
 >
 
+@Injectable()
 export class ChooseQuestionBestAnswerUseCase {
   constructor(
     private answersRepository: AnswersRepository,
@@ -45,7 +47,7 @@ export class ChooseQuestionBestAnswerUseCase {
 
     question.bestAnswerId = new UniqueEntityID(answerId)
 
-    await this.answersRepository.save(answer)
+    await this.questionRepository.save(question)
 
     return right(null)
   }
