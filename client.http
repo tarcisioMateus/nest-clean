@@ -118,4 +118,17 @@ PATCH   {{baseURL}}/answer/{{answerId}}/choose-as-best
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
+###
+
+# @name comment_on_question
+POST   {{baseURL}}/question/{{questionId}}/comment
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "content": "comment on question"
+}
+
+###
+
 
