@@ -8,6 +8,18 @@ import { PrismaStudentMapper } from '../mapper/prisma-student-mapper'
 export class PrismaStudentsRepository implements StudentsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findById(id: string): Promise<Student | null> {
+    const student = await this.prisma.user.findUnique({
+      where: { id },
+    })
+
+    if (!student) {
+      return null
+    }
+
+    return PrismaStudentMapper.toDomain(student)
+  }
+
   async findByEmail(email: string): Promise<Student | null> {
     const student = await this.prisma.user.findUnique({
       where: { email },
