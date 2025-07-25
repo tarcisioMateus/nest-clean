@@ -48,7 +48,9 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
 
   async create(question: Question) {
     this.items.push(question)
-    this.questionAttachmentsRepository.create(question.attachments.getItems())
+    this.questionAttachmentsRepository.createMany(
+      question.attachments.getItems(),
+    )
   }
 
   async save(question: Question): Promise<void> {
@@ -68,6 +70,8 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     )
 
     this.items.splice(questionIndex, 1)
-    this.questionAttachmentsRepository.delete(question.id.toString())
+    this.questionAttachmentsRepository.deleteManyByQuestionId(
+      question.id.toString(),
+    )
   }
 }

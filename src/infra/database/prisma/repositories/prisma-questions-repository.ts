@@ -5,10 +5,14 @@ import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug'
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { PrismaQuestionMapper } from '../mapper/prisma-question-mapper'
+import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository'
 
 @Injectable()
 export class PrismaQuestionsRepository implements QuestionsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly questionAttachmentsRepository: QuestionAttachmentsRepository,
+  ) {}
 
   async findById(id: string): Promise<Question | null> {
     const question = await this.prisma.question.findUnique({ where: { id } })
@@ -51,6 +55,10 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     await this.prisma.question.create({
       data,
     })
+
+    await this.questionAttachmentsRepository.createMany(
+      question.attachments.getItems(),
+    )
   }
 
   async save(question: Question): Promise<void> {
@@ -60,6 +68,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
       where: { id: question.id.toValue() },
       data,
     })
+
+    await this.questionAttachmentsRepository.save(question.attachments)
   }
 
   async delete(question: Question): Promise<void> {

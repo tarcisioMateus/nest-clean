@@ -17,18 +17,18 @@ export class InMemoryQuestionAttachmentsRepository
     return attachment
   }
 
-  async create(questionAttachments: QuestionAttachment[]): Promise<void> {
-    for (const attachment of questionAttachments) {
-      this.items.push(attachment)
-    }
+  async deleteManyByQuestionId(questionId: string): Promise<void> {
+    this.items = this.items.filter(
+      (item) => item.questionId.toString() !== questionId,
+    )
   }
 
-  async save(questionAttachmentList: QuestionAttachmentList): Promise<void> {
-    for (const attachment of questionAttachmentList.getNewItems()) {
-      this.items.push(attachment)
-    }
+  async createMany(questionAttachments: QuestionAttachment[]): Promise<void> {
+    this.items.push(...questionAttachments)
+  }
 
-    for (const attachment of questionAttachmentList.getRemovedItems()) {
+  async deleteMany(questionAttachments: QuestionAttachment[]): Promise<void> {
+    for (const attachment of questionAttachments) {
       const attachmentIndex = this.items.findIndex(
         (item) => item.id.toValue() === attachment.id.toValue(),
       )
@@ -37,9 +37,9 @@ export class InMemoryQuestionAttachmentsRepository
     }
   }
 
-  async delete(questionId: string): Promise<void> {
-    this.items = this.items.filter(
-      (item) => item.questionId.toString() !== questionId,
-    )
+  async save(questionAttachmentList: QuestionAttachmentList): Promise<void> {
+    await this.createMany(questionAttachmentList.getNewItems())
+
+    await this.deleteMany(questionAttachmentList.getRemovedItems())
   }
 }
