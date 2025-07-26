@@ -8,12 +8,14 @@ export class PrismaAnswerAttachmentMapper {
       throw new Error('invalid attachment type!')
     }
 
+    const rawAttachmentId = new UniqueEntityID(raw.id)
+
     return AnswerAttachment.create(
       {
         answerId: new UniqueEntityID(raw.answerId),
-        attachmentId: new UniqueEntityID(raw.id),
+        attachmentId: rawAttachmentId,
       },
-      new UniqueEntityID(raw.id),
+      rawAttachmentId,
     )
   }
 }

@@ -16,7 +16,13 @@ export class QuestionAttachment extends Entity<QuestionAttachmentProps> {
   }
 
   static create(props: QuestionAttachmentProps, id?: UniqueEntityID) {
-    const attachment = new QuestionAttachment(props, id)
+    if (id && !id.equals(props.attachmentId)) {
+      throw new Error(`
+        The attachmentId and id should have the same value to prevent confusion, 
+        on the persistence side of the application
+        `)
+    }
+    const attachment = new QuestionAttachment(props, props.attachmentId)
 
     return attachment
   }
