@@ -6,6 +6,7 @@ import { Attachment } from '../../enterprise/entities/attachment'
 import { AttachmentsRepository } from '../repositories/attachments-repository'
 import { StudentsRepository } from '../repositories/students-repository'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 
 interface UploadAndCreateAttachmentUseCaseRequest extends uploadParams {
   authorId: string
@@ -47,7 +48,11 @@ export class UploadAndCreateAttachmentUseCase {
       fileType,
     })
 
-    const attachment = Attachment.create({ title: fileName, url, authorId })
+    const attachment = Attachment.create({
+      title: fileName,
+      url,
+      authorId: new UniqueEntityID(authorId),
+    })
 
     await this.attachmentsRepository.create(attachment)
 

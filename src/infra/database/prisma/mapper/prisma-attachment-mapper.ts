@@ -8,7 +8,7 @@ export class PrismaAttachmentMapper {
       {
         title: raw.title,
         url: raw.link,
-        authorId: raw.authorId,
+        authorId: new UniqueEntityID(raw.authorId),
       },
       new UniqueEntityID(raw.id),
     )
@@ -21,7 +21,7 @@ export class PrismaAttachmentMapper {
       id: attachment.id.toValue(),
       title: attachment.title,
       link: attachment.url,
-      authorId: attachment.authorId,
+      authorId: attachment.authorId.toString(),
     }
   }
 }
