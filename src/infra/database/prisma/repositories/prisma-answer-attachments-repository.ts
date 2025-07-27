@@ -20,17 +20,49 @@ export class PrismaAnswerAttachmentsRepository
     return answerAttachments.map(PrismaAnswerAttachmentMapper.toDomain)
   }
 
-  async delete(answerId: string): Promise<void> {
+  async deleteManyByAnswerId(answerId: string): Promise<void> {
     await this.prisma.attachment.deleteMany({
       where: { answerId },
     })
   }
 
-  async create(answerAttachments: AnswerAttachment[]): Promise<void> {
-    throw new Error('Method not implemented.')
+  async createMany(answerAttachments: AnswerAttachment[]): Promise<void> {
+    if (answerAttachments.length) {
+      const attachmentsId = answerAttachments.map((attachment) =>
+        attachment.attachmentId.toString(),
+      )
+
+      await this.prisma.attachment.updateMany({
+        where: {
+          id: {
+            in: attachmentsId,
+          },
+        },
+        data: {
+          answerId: answerAttachments[0].answerId.toString(),
+        },
+      })
+    }
+  }
+
+  async deleteMany(answerAttachments: AnswerAttachment[]): Promise<void> {
+    if (answerAttachments.length) {
+      const attachmentsId = answerAttachments.map((attachment) =>
+        attachment.attachmentId.toString(),
+      )
+
+      await this.prisma.attachment.deleteMany({
+        where: {
+          id: {
+            in: attachmentsId,
+          },
+        },
+      })
+    }
   }
 
   async save(answerAttachmentList: AnswerAttachmentList): Promise<void> {
-    throw new Error('Method not implemented.')
+    await this.createMany(answerAttachmentList.getNewItems())
+    await this.deleteMany(answerAttachmentList.getRemovedItems())
   }
 }

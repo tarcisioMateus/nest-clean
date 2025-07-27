@@ -3,7 +3,8 @@ import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachmen
 
 export abstract class AnswerAttachmentsRepository {
   abstract findManyByAnswerId(answerId: string): Promise<AnswerAttachment[]>
-  abstract create(answerAttachments: AnswerAttachment[]): Promise<void>
+  abstract deleteManyByAnswerId(answerId: string): Promise<void>
+  abstract createMany(answerAttachments: AnswerAttachment[]): Promise<void>
+  abstract deleteMany(answerAttachments: AnswerAttachment[]): Promise<void>
   abstract save(answerAttachmentList: AnswerAttachmentList): Promise<void>
-  abstract delete(answerId: string): Promise<void>
 }

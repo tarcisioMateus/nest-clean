@@ -86,7 +86,7 @@ describe('Edit Question E2E', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({
         title: 'question 01',
-        content: 'content',
+        content: 'updated content',
         attachmentsId: [
           attachment01.id.toString(),
           attachment03.id.toString(),
@@ -101,12 +101,12 @@ describe('Edit Question E2E', () => {
     })
     expect(updatedQuestion).toEqual(
       expect.objectContaining({
-        content: 'content',
+        content: 'updated content',
         title: 'question 01',
       }),
     )
 
-    // check if was made connection of attachments with question
+    // check if question attachments was updated
     const attachmentsLinkedToQuestionOnDatabase =
       await prisma.attachment.findMany({
         where: {
