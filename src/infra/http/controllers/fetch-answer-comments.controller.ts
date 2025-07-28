@@ -10,7 +10,7 @@ import {
   IdParamSchema,
   zodIdParamValidationPipe,
 } from './input-schema/id-param-schema'
-import { CommentPresenter } from '../presenter/comment-presenter'
+import { CommentWithAuthorPresenter } from '../presenter/comment-with-author-presenter'
 
 @Controller('/answer/:answerId/comments')
 export class FetchAnswerCommentsController {
@@ -29,7 +29,9 @@ export class FetchAnswerCommentsController {
       throw new BadRequestException(response.value.message)
     }
 
-    const comments = response.value.answerComments.map(CommentPresenter.toHttp)
+    const comments = response.value.comments.map(
+      CommentWithAuthorPresenter.toHttp,
+    )
 
     return { comments }
   }
