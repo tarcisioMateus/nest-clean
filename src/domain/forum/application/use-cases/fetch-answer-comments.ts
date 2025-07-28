@@ -5,10 +5,10 @@ import {
   DEFAULT_PAGE,
 } from '@/core/repositories/pagination-params'
 import { Optional } from '@/core/types/optional'
-import { AnswerComment } from '../../enterprise/entities/answer-comment'
 import { Either, left, right } from '@/core/either'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
+import { CommentWithAuthor } from '../../enterprise/entities/value-objects/comment-with-author'
 
 interface FetchAnswerCommentsUseCaseRequest extends PaginationParams {
   answerId: string
@@ -17,7 +17,7 @@ interface FetchAnswerCommentsUseCaseRequest extends PaginationParams {
 type FetchAnswerCommentsUseCaseResponse = Either<
   ResourceNotFoundError,
   {
-    answerComments: AnswerComment[]
+    comments: CommentWithAuthor[]
   }
 >
 
@@ -33,18 +33,19 @@ export class FetchAnswerCommentsUseCase {
     FetchAnswerCommentsUseCaseRequest,
     'page' | 'perPage'
   >): Promise<FetchAnswerCommentsUseCaseResponse> {
-    const answerComments =
-      await this.answerCommentsRepository.findManyByAnswerId(answerId, {
-        page,
-        perPage,
-      })
+    const comments =
+      await this.answerCommentsRepository.findManyByAnswerIdWithAuthor(
+        answerId,
+        {
+          page,
+          perPage,
+        },
+      )
 
-    if (!answerComments.length) {
+    if (!comments.length) {
       return left(new ResourceNotFoundError())
     }
 
-    return right({
-      answerComments,
-    })
+    return right({ comments })
   }
 }
