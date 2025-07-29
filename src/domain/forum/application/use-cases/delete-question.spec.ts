@@ -6,19 +6,22 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memory-question-attachments-repository'
 import { makeQuestionAttachment } from 'test/factories/make-question-attachment'
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryQuestionsRepository: InMemoryQuestionsRepository
-let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
+let questionsRepository: InMemoryQuestionsRepository
+let questionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
 
 let sut: DeleteQuestionUseCase
 
 describe('Delete Question', () => {
   beforeEach(() => {
-    inMemoryQuestionAttachmentsRepository =
-      new InMemoryQuestionAttachmentsRepository()
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+    const {
       inMemoryQuestionAttachmentsRepository,
-    )
+      inMemoryQuestionsRepository,
+    } = GetAllInMemoryRepositories.execute()
+
+    questionsRepository = inMemoryQuestionsRepository
+    questionAttachmentsRepository = inMemoryQuestionAttachmentsRepository
 
     sut = new DeleteQuestionUseCase(inMemoryQuestionsRepository)
   })
@@ -31,7 +34,7 @@ describe('Delete Question', () => {
       new UniqueEntityID('question-1'),
     )
 
-    await inMemoryQuestionsRepository.create(newQuestion)
+    await questionsRepository.create(newQuestion)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -40,7 +43,7 @@ describe('Delete Question', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryQuestionsRepository.items).toHaveLength(0)
+    expect(questionsRepository.items).toHaveLength(0)
   })
 
   it('should Not be able to delete another user question', async () => {
@@ -51,7 +54,7 @@ describe('Delete Question', () => {
       new UniqueEntityID('question-1'),
     )
 
-    await inMemoryQuestionsRepository.create(newQuestion)
+    await questionsRepository.create(newQuestion)
 
     const response = await sut.execute({
       authorId: 'author-2',
@@ -60,7 +63,7 @@ describe('Delete Question', () => {
 
     expect(response.isLeft()).toBeTruthy()
     expect(response.value).toBeInstanceOf(NotAllowedError)
-    expect(inMemoryQuestionsRepository.items).toHaveLength(1)
+    expect(questionsRepository.items).toHaveLength(1)
   })
 
   it('should be able to delete an question with its attachments', async () => {
@@ -83,9 +86,9 @@ describe('Delete Question', () => {
     ]
 
     question.attachments = new QuestionAttachmentList(attachments)
-    await inMemoryQuestionsRepository.create(question)
+    await questionsRepository.create(question)
 
-    expect(inMemoryQuestionAttachmentsRepository.items).toHaveLength(2)
+    expect(questionAttachmentsRepository.items).toHaveLength(2)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -94,7 +97,7 @@ describe('Delete Question', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryQuestionsRepository.items).toHaveLength(0)
-    expect(inMemoryQuestionAttachmentsRepository.items).toHaveLength(0)
+    expect(questionsRepository.items).toHaveLength(0)
+    expect(questionAttachmentsRepository.items).toHaveLength(0)
   })
 })

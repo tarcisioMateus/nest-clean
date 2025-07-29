@@ -1,17 +1,17 @@
-import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AnswerComment } from '../../enterprise/entities/answer-comment'
 import { CommentWithAuthor } from '../../enterprise/entities/value-objects/comment-with-author'
+import { LoadingParams } from '@/core/repositories/loading-params'
 
 export abstract class AnswerCommentsRepository {
   abstract findById(id: string): Promise<AnswerComment | null>
   abstract findManyByAnswerId(
     answerId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<AnswerComment[]>
 
   abstract findManyByAnswerIdWithAuthor(
     questionId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<CommentWithAuthor[]>
 
   abstract create(AnswerComment: AnswerComment): Promise<void>

@@ -72,12 +72,13 @@ describe('Fetch Answer Comments', () => {
 
     const response = await sut.execute({
       answerId: 'answer-1',
-      page: 2,
+      loading: 2,
+      perLoading: 10,
     })
 
     expect(response.isRight()).toBeTruthy()
     if (response.isRight()) {
-      expect(response.value.comments).toHaveLength(2)
+      expect(response.value.comments).toHaveLength(10)
     }
   })
 })

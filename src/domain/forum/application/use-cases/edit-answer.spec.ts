@@ -6,23 +6,21 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory-answer-attachments-repository'
 import { makeAnswerAttachment } from 'test/factories/make-answer-attachment'
 import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
-let inMemoryAnswersRepository: InMemoryAnswersRepository
+let answerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
+let answersRepository: InMemoryAnswersRepository
 let sut: EditAnswerUseCase
 
 describe('Edit Answer', () => {
   beforeEach(() => {
-    inMemoryAnswerAttachmentsRepository =
-      new InMemoryAnswerAttachmentsRepository()
-    inMemoryAnswersRepository = new InMemoryAnswersRepository(
-      inMemoryAnswerAttachmentsRepository,
-    )
+    const { inMemoryAnswerAttachmentsRepository, inMemoryAnswersRepository } =
+      GetAllInMemoryRepositories.execute()
 
-    sut = new EditAnswerUseCase(
-      inMemoryAnswersRepository,
-      inMemoryAnswerAttachmentsRepository,
-    )
+    answerAttachmentsRepository = inMemoryAnswerAttachmentsRepository
+    answersRepository = inMemoryAnswersRepository
+
+    sut = new EditAnswerUseCase(answersRepository, answerAttachmentsRepository)
   })
 
   it('should be able to edit an answer', async () => {
@@ -33,7 +31,7 @@ describe('Edit Answer', () => {
       new UniqueEntityID('answer-1'),
     )
 
-    await inMemoryAnswersRepository.create(newAnswer)
+    await answersRepository.create(newAnswer)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -44,7 +42,7 @@ describe('Edit Answer', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryAnswersRepository.items[0]).toMatchObject({
+    expect(answersRepository.items[0]).toMatchObject({
       content: 'new content',
     })
   })
@@ -57,7 +55,7 @@ describe('Edit Answer', () => {
       new UniqueEntityID('answer-1'),
     )
 
-    await inMemoryAnswersRepository.create(newAnswer)
+    await answersRepository.create(newAnswer)
 
     const response = await sut.execute({
       authorId: 'author-2',
@@ -68,7 +66,7 @@ describe('Edit Answer', () => {
 
     expect(response.isLeft()).toBeTruthy()
     expect(response.value).toBeInstanceOf(NotAllowedError)
-    expect(inMemoryAnswersRepository.items).toHaveLength(1)
+    expect(answersRepository.items).toHaveLength(1)
   })
 
   it('should be able to edit an answer with its attachments', async () => {
@@ -91,7 +89,7 @@ describe('Edit Answer', () => {
     ]
 
     answer.attachments = new AnswerAttachmentList(attachments)
-    await inMemoryAnswersRepository.create(answer)
+    await answersRepository.create(answer)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -102,11 +100,11 @@ describe('Edit Answer', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryAnswersRepository.items[0]).toMatchObject({
+    expect(answersRepository.items[0]).toMatchObject({
       content: 'new content',
     })
-    expect(inMemoryAnswerAttachmentsRepository.items).toHaveLength(3)
-    expect(inMemoryAnswerAttachmentsRepository.items).toEqual([
+    expect(answerAttachmentsRepository.items).toHaveLength(3)
+    expect(answerAttachmentsRepository.items).toEqual([
       expect.objectContaining({ attachmentId: new UniqueEntityID('2') }),
       expect.objectContaining({ attachmentId: new UniqueEntityID('3') }),
       expect.objectContaining({ attachmentId: new UniqueEntityID('4') }),

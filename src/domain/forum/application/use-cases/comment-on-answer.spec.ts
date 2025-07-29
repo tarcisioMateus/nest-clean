@@ -2,37 +2,29 @@ import { makeAnswer } from 'test/factories/make-answer'
 import { CommentOnAnswerUseCase } from './comment-on-answer'
 import { InMemoryAnswerCommentsRepository } from 'test/repositories/in-memory-answer-comments-repository'
 import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-repository'
-import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory-answer-attachments-repository'
-import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
-let inMemoryAnswersRepository: InMemoryAnswersRepository
-let inMemoryStudentsRepository: InMemoryStudentsRepository
-let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository
+let answersRepository: InMemoryAnswersRepository
+let answerCommentsRepository: InMemoryAnswerCommentsRepository
 let sut: CommentOnAnswerUseCase
 
 describe('Comment on Answer', () => {
   beforeEach(() => {
-    inMemoryAnswerAttachmentsRepository =
-      new InMemoryAnswerAttachmentsRepository()
-    inMemoryAnswersRepository = new InMemoryAnswersRepository(
-      inMemoryAnswerAttachmentsRepository,
-    )
+    const { inMemoryAnswerCommentsRepository, inMemoryAnswersRepository } =
+      GetAllInMemoryRepositories.execute()
 
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository(
-      inMemoryStudentsRepository,
-    )
+    answersRepository = inMemoryAnswersRepository
+    answerCommentsRepository = inMemoryAnswerCommentsRepository
+
     sut = new CommentOnAnswerUseCase(
-      inMemoryAnswersRepository,
-      inMemoryAnswerCommentsRepository,
+      answersRepository,
+      answerCommentsRepository,
     )
   })
 
   it('should be able to create an answer comment', async () => {
     const answer = makeAnswer()
-
-    inMemoryAnswersRepository.create(answer)
+    await answersRepository.create(answer)
 
     const response = await sut.execute({
       answerId: answer.id.toString(),

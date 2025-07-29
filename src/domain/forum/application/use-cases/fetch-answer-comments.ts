@@ -1,16 +1,16 @@
 import { AnswerCommentsRepository } from '../repositories/answer-comments-repository'
-import {
-  PaginationParams,
-  DEFAULT_PER_PAGE,
-  DEFAULT_PAGE,
-} from '@/core/repositories/pagination-params'
 import { Optional } from '@/core/types/optional'
 import { Either, left, right } from '@/core/either'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
 import { CommentWithAuthor } from '../../enterprise/entities/value-objects/comment-with-author'
+import {
+  LoadingParams,
+  DEFAULT_LOADING,
+  DEFAULT_PER_LOADING,
+} from '@/core/repositories/loading-params'
 
-interface FetchAnswerCommentsUseCaseRequest extends PaginationParams {
+interface FetchAnswerCommentsUseCaseRequest extends LoadingParams {
   answerId: string
 }
 
@@ -27,18 +27,18 @@ export class FetchAnswerCommentsUseCase {
 
   async execute({
     answerId,
-    page = DEFAULT_PAGE,
-    perPage = DEFAULT_PER_PAGE,
+    loading = DEFAULT_LOADING,
+    perLoading = DEFAULT_PER_LOADING,
   }: Optional<
     FetchAnswerCommentsUseCaseRequest,
-    'page' | 'perPage'
+    'loading' | 'perLoading'
   >): Promise<FetchAnswerCommentsUseCaseResponse> {
     const comments =
       await this.answerCommentsRepository.findManyByAnswerIdWithAuthor(
         answerId,
         {
-          page,
-          perPage,
+          loading,
+          perLoading,
         },
       )
 

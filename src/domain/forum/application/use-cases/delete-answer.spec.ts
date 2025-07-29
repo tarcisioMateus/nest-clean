@@ -6,21 +6,22 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory-answer-attachments-repository'
 import { makeAnswerAttachment } from 'test/factories/make-answer-attachment'
 import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryAnswersRepository: InMemoryAnswersRepository
-let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
+let answersRepository: InMemoryAnswersRepository
+let answerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
 
 let sut: DeleteAnswerUseCase
 
 describe('Delete Answer', () => {
   beforeEach(() => {
-    inMemoryAnswerAttachmentsRepository =
-      new InMemoryAnswerAttachmentsRepository()
-    inMemoryAnswersRepository = new InMemoryAnswersRepository(
-      inMemoryAnswerAttachmentsRepository,
-    )
+    const { inMemoryAnswerAttachmentsRepository, inMemoryAnswersRepository } =
+      GetAllInMemoryRepositories.execute()
 
-    sut = new DeleteAnswerUseCase(inMemoryAnswersRepository)
+    answerAttachmentsRepository = inMemoryAnswerAttachmentsRepository
+    answersRepository = inMemoryAnswersRepository
+
+    sut = new DeleteAnswerUseCase(answersRepository)
   })
 
   it('should be able to delete an answer', async () => {
@@ -31,7 +32,7 @@ describe('Delete Answer', () => {
       new UniqueEntityID('answer-1'),
     )
 
-    await inMemoryAnswersRepository.create(newAnswer)
+    await answersRepository.create(newAnswer)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -40,7 +41,7 @@ describe('Delete Answer', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryAnswersRepository.items).toHaveLength(0)
+    expect(answersRepository.items).toHaveLength(0)
   })
 
   it('should Not be able to delete another user answer', async () => {
@@ -51,7 +52,7 @@ describe('Delete Answer', () => {
       new UniqueEntityID('answer-1'),
     )
 
-    await inMemoryAnswersRepository.create(newAnswer)
+    await answersRepository.create(newAnswer)
 
     const response = await sut.execute({
       authorId: 'author-2',
@@ -60,7 +61,7 @@ describe('Delete Answer', () => {
 
     expect(response.isLeft()).toBeTruthy()
     expect(response.value).toBeInstanceOf(NotAllowedError)
-    expect(inMemoryAnswersRepository.items).toHaveLength(1)
+    expect(answersRepository.items).toHaveLength(1)
   })
 
   it('should be able to delete an answer with its attachments', async () => {
@@ -83,9 +84,9 @@ describe('Delete Answer', () => {
     ]
 
     answer.attachments = new AnswerAttachmentList(attachments)
-    await inMemoryAnswersRepository.create(answer)
+    await answersRepository.create(answer)
 
-    expect(inMemoryAnswerAttachmentsRepository.items).toHaveLength(2)
+    expect(answerAttachmentsRepository.items).toHaveLength(2)
 
     const response = await sut.execute({
       authorId: 'author-1',
@@ -94,7 +95,7 @@ describe('Delete Answer', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryAnswersRepository.items).toHaveLength(0)
-    expect(inMemoryAnswerAttachmentsRepository.items).toHaveLength(0)
+    expect(answersRepository.items).toHaveLength(0)
+    expect(answerAttachmentsRepository.items).toHaveLength(0)
   })
 })

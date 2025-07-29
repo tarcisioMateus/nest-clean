@@ -1,23 +1,26 @@
-import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memory-question-attachments-repository'
 import { CreateQuestionUseCase } from './create-question'
 import { InMemoryQuestionsRepository } from 'test/repositories/in-memory-questions-repository'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { makeQuestion } from 'test/factories/make-question'
 import { UnavailableCredentialsError } from './errors/unavailable-credentials-error'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
+import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memory-question-attachments-repository'
 
-let inMemoryQuestionsRepository: InMemoryQuestionsRepository
-let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
+let questionsRepository: InMemoryQuestionsRepository
+let questionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
 let sut: CreateQuestionUseCase
 
 describe('Create Question', () => {
   beforeEach(() => {
-    inMemoryQuestionAttachmentsRepository =
-      new InMemoryQuestionAttachmentsRepository()
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+    const {
+      inMemoryQuestionsRepository,
       inMemoryQuestionAttachmentsRepository,
-    )
+    } = GetAllInMemoryRepositories.execute()
 
-    sut = new CreateQuestionUseCase(inMemoryQuestionsRepository)
+    questionsRepository = inMemoryQuestionsRepository
+    questionAttachmentsRepository = inMemoryQuestionAttachmentsRepository
+
+    sut = new CreateQuestionUseCase(questionsRepository)
   })
 
   it('should be able to create an question', async () => {
@@ -46,8 +49,11 @@ describe('Create Question', () => {
     expect(response.isRight()).toBeTruthy()
     if (response.isRight()) {
       expect(response.value.question.attachments.getItems()).toHaveLength(2)
-      expect(inMemoryQuestionAttachmentsRepository.items[0]).toEqual(
-        expect.objectContaining({ attachmentId: new UniqueEntityID('1') }),
+      expect(questionAttachmentsRepository.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ attachmentId: new UniqueEntityID('1') }),
+          expect.objectContaining({ attachmentId: new UniqueEntityID('2') }),
+        ]),
       )
     }
   })
@@ -55,7 +61,7 @@ describe('Create Question', () => {
   it('should NOT be able to create 2 questions with same title/slug', async () => {
     const question = makeQuestion({ title: 'question 1' })
 
-    await inMemoryQuestionsRepository.create(question)
+    await questionsRepository.create(question)
 
     const response = await sut.execute({
       title: question.title,

@@ -1,9 +1,9 @@
 import { DomainEvents } from '@/core/events/domain-events'
-import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AnswerCommentsRepository } from '@/domain/forum/application/repositories/answer-comments-repository'
 import { AnswerComment } from '@/domain/forum/enterprise/entities/answer-comment'
 import { InMemoryStudentsRepository } from './in-memory-students-repository'
 import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author'
+import { LoadingParams } from '@/core/repositories/loading-params'
 
 export class InMemoryAnswerCommentsRepository
   implements AnswerCommentsRepository
@@ -24,22 +24,22 @@ export class InMemoryAnswerCommentsRepository
 
   async findManyByAnswerId(
     answerId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<AnswerComment[]> {
     const answerComments = this.items
       .filter((item) => item.answerId.toString() === answerId)
-      .splice((page - 1) * perPage, page * perPage)
+      .slice((loading - 1) * perLoading, loading * perLoading)
 
     return answerComments
   }
 
   async findManyByAnswerIdWithAuthor(
     answerId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<CommentWithAuthor[]> {
     const comments = this.items
       .filter((item) => item.answerId.toString() === answerId)
-      .splice((page - 1) * perPage, page * perPage)
+      .slice((loading - 1) * perLoading, loading * perLoading)
       .map((comment) => {
         const author = this.studentRepository.items.find((student) => {
           return student.id.equals(comment.authorId)

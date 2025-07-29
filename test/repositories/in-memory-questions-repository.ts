@@ -1,13 +1,22 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import { PaginationParams } from '@/core/repositories/pagination-params'
-import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository'
 import { QuestionsRepository } from '@/domain/forum/application/repositories/questions-repository'
 import { Question } from '@/domain/forum/enterprise/entities/question'
 import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug'
+import { InMemoryQuestionAttachmentsRepository } from './in-memory-question-attachments-repository'
+import { InMemoryAttachmentsRepository } from './in-memory-attachments-repository'
+import { InMemoryQuestionCommentsRepository } from './in-memory-question-comments-repository'
+import { InMemoryAnswersRepository } from './in-memory-answers-repository'
+import { InMemoryStudentsRepository } from './in-memory-students-repository'
+import { QuestionWithDetails } from '@/domain/forum/enterprise/entities/value-objects/question-with-details'
 
 export class InMemoryQuestionsRepository implements QuestionsRepository {
   constructor(
-    private questionAttachmentsRepository: QuestionAttachmentsRepository,
+    private readonly questionAttachmentsRepository: InMemoryQuestionAttachmentsRepository,
+    private readonly attachmentsRepository: InMemoryAttachmentsRepository,
+    private readonly questionCommentsRepository: InMemoryQuestionCommentsRepository,
+    private readonly answersRepository: InMemoryAnswersRepository,
+    private readonly studentsRepository: InMemoryStudentsRepository,
   ) {}
 
   public items: Question[] = []
@@ -32,6 +41,75 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     return question
   }
 
+  async findDetailsBySlug(slug: Slug): Promise<QuestionWithDetails | null> {
+    const question = this.items.find((item) => item.slug.value === slug.value)
+
+    if (!question) {
+      return null
+    }
+
+    const attachments = (
+      await this.questionAttachmentsRepository.findManyByQuestionId(
+        question.id.toString(),
+      )
+    ).map((questionAttachment) => {
+      const attachment = this.attachmentsRepository.items.find((attachment) => {
+        return attachment.id.equals(questionAttachment.attachmentId)
+      })
+
+      if (!attachment) {
+        throw new Error(
+          `No existent attachment: "${questionAttachment.attachmentId.toString()}"`,
+        )
+      }
+
+      return {
+        id: attachment.id,
+        url: attachment.url,
+        title: attachment.title,
+      }
+    })
+
+    const commentsLength = this.questionCommentsRepository.items.filter(
+      (comment) => {
+        return comment.questionId.equals(question.id)
+      },
+    ).length
+
+    const student = await this.studentsRepository.findById(
+      question.authorId.toString(),
+    )
+
+    if (!student) {
+      throw new Error(`author not founded: "${question.authorId.toString()}"`)
+    }
+
+    const answersLength = this.answersRepository.items.filter((answer) => {
+      return answer.questionId.equals(question.id)
+    }).length
+
+    return QuestionWithDetails.create({
+      question: {
+        id: question.id,
+        content: question.content,
+        createdAt: question.createdAt,
+        slug: question.slug,
+        title: question.title,
+        bestAnswerID: question.bestAnswerId,
+        updatedAt: question.updatedAt,
+      },
+      answers: { length: answersLength, loaded: 0 },
+      attachments,
+      comments: {
+        length: commentsLength,
+      },
+      author: {
+        id: student.id,
+        name: student.name,
+      },
+    })
+  }
+
   async fetchManyRecent({
     page,
     perPage,
@@ -41,7 +119,7 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
         (a: Question, b: Question) =>
           b.createdAt.getTime() - a.createdAt.getTime(),
       )
-      .splice((page - 1) * perPage, page * perPage)
+      .slice((page - 1) * perPage, page * perPage)
 
     return questions
   }
