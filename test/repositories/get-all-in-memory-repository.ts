@@ -16,7 +16,7 @@ let inMemoryAnswersRepository: InMemoryAnswersRepository
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
 let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository
 let inMemoryStudentsRepository: InMemoryStudentsRepository
-let inMemoryNotificationRepository: InMemoryNotificationsRepository
+let inMemoryNotificationsRepository: InMemoryNotificationsRepository
 
 export class GetAllInMemoryRepositories {
   static execute() {
@@ -46,7 +46,7 @@ export class GetAllInMemoryRepositories {
       inMemoryStudentsRepository,
     )
 
-    inMemoryNotificationRepository = new InMemoryNotificationsRepository()
+    inMemoryNotificationsRepository = new InMemoryNotificationsRepository()
 
     return {
       inMemoryStudentsRepository,
@@ -57,7 +57,7 @@ export class GetAllInMemoryRepositories {
       inMemoryAnswerCommentsRepository,
       inMemoryAnswersRepository,
       inMemoryQuestionsRepository,
-      inMemoryNotificationRepository,
+      inMemoryNotificationsRepository,
     }
   }
 }
