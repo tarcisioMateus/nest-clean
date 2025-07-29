@@ -7,24 +7,36 @@ import { StudentFactory } from 'test/factories/make-student'
 import { QuestionFactory } from 'test/factories/make-question'
 import { DatabaseModule } from '@/infra/database/database.module'
 import { AnswerFactory } from 'test/factories/make-answer'
+import { AttachmentFactory } from 'test/factories/make-attachment'
+import { AnswerAttachmentFactory } from 'test/factories/make-answer-attachment'
 
 describe('Fetch Question Answers E2E', () => {
   let app: INestApplication
   let studentFactory: StudentFactory
   let questionFactory: QuestionFactory
   let answerFactory: AnswerFactory
+  let attachmentFactory: AttachmentFactory
+  let answerAttachmentFactory: AnswerAttachmentFactory
   let jwt: JwtService
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory, QuestionFactory, AnswerFactory],
+      providers: [
+        StudentFactory,
+        QuestionFactory,
+        AnswerFactory,
+        AttachmentFactory,
+        AnswerAttachmentFactory,
+      ],
     }).compile()
 
     app = moduleRef.createNestApplication()
     studentFactory = moduleRef.get(StudentFactory)
     questionFactory = moduleRef.get(QuestionFactory)
     answerFactory = moduleRef.get(AnswerFactory)
+    answerAttachmentFactory = moduleRef.get(AnswerAttachmentFactory)
+    attachmentFactory = moduleRef.get(AttachmentFactory)
     jwt = moduleRef.get(JwtService)
     await app.init()
   })
@@ -42,10 +54,18 @@ describe('Fetch Question Answers E2E', () => {
       authorId: student.id,
     })
 
+    const attachment01 = await attachmentFactory.makePrismaAttachment({
+      authorId: student.id,
+    })
     const answer01 = await answerFactory.makePrismaAnswer({
       authorId: student.id,
       questionId: question.id,
     })
+    await answerAttachmentFactory.makePrismaAnswerAttachment({
+      answerId: answer01.id,
+      attachmentId: attachment01.id,
+    })
+
     const answer02 = await answerFactory.makePrismaAnswer({
       authorId: student.id,
       questionId: question.id,
@@ -59,8 +79,24 @@ describe('Fetch Question Answers E2E', () => {
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual({
       answers: [
-        expect.objectContaining({ id: answer02.id.toString() }),
-        expect.objectContaining({ id: answer01.id.toString() }),
+        {
+          answer: expect.objectContaining({ id: answer02.id.toString() }),
+          author: { id: student.id.toString(), name: student.name },
+          comments: { length: 0 },
+          attachments: [],
+        },
+        {
+          answer: expect.objectContaining({ id: answer01.id.toString() }),
+          author: { id: student.id.toString(), name: student.name },
+          comments: { length: 0 },
+          attachments: [
+            {
+              id: attachment01.id.toString(),
+              url: attachment01.url,
+              title: attachment01.title,
+            },
+          ],
+        },
       ],
     })
   })

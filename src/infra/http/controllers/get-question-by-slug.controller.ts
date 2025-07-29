@@ -6,12 +6,12 @@ import {
   Param,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { QuestionPresenter } from '../presenter/question-presenter'
 import { GetQuestionBySlugUseCase } from '@/domain/forum/application/use-cases/get-question-by-slug'
 import {
   slugParamSchema,
   SlugParamSchema,
 } from './input-schema/slug-param-schema'
+import { QuestionWithDetailsPresenter } from '../presenter/question-with-details.presenter'
 
 const zodPageQueryValidationPipe = new ZodValidationPipe<SlugParamSchema>(
   slugParamSchema,
@@ -34,8 +34,8 @@ export class GetQuestionBySlugController {
       throw new BadRequestException(response.value.message)
     }
 
-    const question = QuestionPresenter.toHttp(response.value.question)
+    const details = QuestionWithDetailsPresenter.toHttp(response.value.details)
 
-    return { question }
+    return { details }
   }
 }

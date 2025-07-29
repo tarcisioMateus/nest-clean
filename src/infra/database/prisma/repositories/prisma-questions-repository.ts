@@ -6,6 +6,8 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { PrismaQuestionMapper } from '../mapper/prisma-question-mapper'
 import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository'
+import { QuestionWithDetails } from '@/domain/forum/enterprise/entities/value-objects/question-with-details'
+import { PrismaQuestionWithDetailsMapper } from '../mapper/prisma-question-with-details-mapper'
 
 @Injectable()
 export class PrismaQuestionsRepository implements QuestionsRepository {
@@ -34,6 +36,53 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     }
 
     return PrismaQuestionMapper.toDomain(question)
+  }
+
+  async findDetailsBySlug(slug: Slug): Promise<QuestionWithDetails | null> {
+    const question = await this.prisma.question.findUnique({
+      where: { slug: slug.value }, // Use the string value of the slug
+      select: {
+        // Select main Question fields
+        id: true,
+        title: true,
+        slug: true,
+        content: true,
+        bestAnswerId: true, // Prisma returns the raw ID (string or null)
+        createdAt: true,
+        updatedAt: true,
+
+        // Select specific fields for related Attachments
+        attachments: {
+          select: {
+            id: true, // Prisma returns raw ID
+            title: true,
+            link: true,
+          },
+        },
+
+        // Select specific fields for related Author
+        author: {
+          select: {
+            id: true, // Prisma returns raw ID
+            name: true,
+          },
+        },
+
+        // Use _count to get the total number of comments and answers
+        _count: {
+          select: {
+            comments: true,
+            answers: true,
+          },
+        },
+      },
+    })
+
+    if (!question) {
+      return null
+    }
+
+    return PrismaQuestionWithDetailsMapper.toDomain(question)
   }
 
   async fetchManyRecent({

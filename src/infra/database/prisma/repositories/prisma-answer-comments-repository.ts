@@ -1,4 +1,3 @@
-import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AnswerCommentsRepository } from '@/domain/forum/application/repositories/answer-comments-repository'
 import { AnswerComment } from '@/domain/forum/enterprise/entities/answer-comment'
 import { Injectable } from '@nestjs/common'
@@ -6,6 +5,7 @@ import { PrismaService } from '../prisma.service'
 import { PrismaAnswerCommentMapper } from '../mapper/prisma-answer-comment-mapper'
 import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author'
 import { PrismaCommentWithAuthorMapper } from '../mapper/prisma-comment-with-author-mapper'
+import { LoadingParams } from '@/core/repositories/loading-params'
 
 @Injectable()
 export class PrismaAnswerCommentsRepository
@@ -27,13 +27,13 @@ export class PrismaAnswerCommentsRepository
 
   async findManyByAnswerId(
     answerId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<AnswerComment[]> {
     const answerComments = await this.prisma.comment.findMany({
       where: { answerId },
       orderBy: { createdAt: 'desc' },
-      take: perPage,
-      skip: (page - 1) * perPage,
+      take: perLoading,
+      skip: (loading - 1) * perLoading,
     })
 
     return answerComments.map(PrismaAnswerCommentMapper.toDomain)
@@ -41,7 +41,7 @@ export class PrismaAnswerCommentsRepository
 
   async findManyByAnswerIdWithAuthor(
     answerId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<CommentWithAuthor[]> {
     const answerComments = await this.prisma.comment.findMany({
       where: { answerId },
@@ -49,8 +49,8 @@ export class PrismaAnswerCommentsRepository
         author: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: perPage,
-      skip: (page - 1) * perPage,
+      take: perLoading,
+      skip: (loading - 1) * perLoading,
     })
 
     return answerComments.map(PrismaCommentWithAuthorMapper.toDomain)

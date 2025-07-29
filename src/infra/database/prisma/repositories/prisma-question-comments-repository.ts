@@ -1,4 +1,3 @@
-import { PaginationParams } from '@/core/repositories/pagination-params'
 import { QuestionCommentsRepository } from '@/domain/forum/application/repositories/question-comments-repository'
 import { QuestionComment } from '@/domain/forum/enterprise/entities/question-comment'
 import { Injectable } from '@nestjs/common'
@@ -6,6 +5,7 @@ import { PrismaService } from '../prisma.service'
 import { PrismaQuestionCommentMapper } from '../mapper/prisma-question-comment-mapper'
 import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author'
 import { PrismaCommentWithAuthorMapper } from '../mapper/prisma-comment-with-author-mapper'
+import { LoadingParams } from '@/core/repositories/loading-params'
 
 @Injectable()
 export class PrismaQuestionCommentsRepository
@@ -27,13 +27,13 @@ export class PrismaQuestionCommentsRepository
 
   async findManyByQuestionId(
     questionId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<QuestionComment[]> {
     const questionComments = await this.prisma.comment.findMany({
       where: { questionId },
       orderBy: { createdAt: 'desc' },
-      take: perPage,
-      skip: (page - 1) * perPage,
+      take: perLoading,
+      skip: (loading - 1) * perLoading,
     })
 
     return questionComments.map(PrismaQuestionCommentMapper.toDomain)
@@ -41,7 +41,7 @@ export class PrismaQuestionCommentsRepository
 
   async findManyByQuestionIdWithAuthor(
     questionId: string,
-    { page, perPage }: PaginationParams,
+    { loading, perLoading }: LoadingParams,
   ): Promise<CommentWithAuthor[]> {
     const questionComments = await this.prisma.comment.findMany({
       where: { questionId },
@@ -49,8 +49,8 @@ export class PrismaQuestionCommentsRepository
         author: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: perPage,
-      skip: (page - 1) * perPage,
+      take: perLoading,
+      skip: (loading - 1) * perLoading,
     })
 
     return questionComments.map(PrismaCommentWithAuthorMapper.toDomain)
