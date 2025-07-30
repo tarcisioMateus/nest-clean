@@ -25,10 +25,11 @@ model User {
   password String
   role     UserRole @default(STUDENT)
 
-  questions  Question[]
-  answers    Answer[]
-  Comment    Comment[]
-  Attachment Attachment[]
+  questions    Question[]
+  answers      Answer[]
+  Comment      Comment[]
+  Attachment   Attachment[]
+  Notification Notification[]
 
   @@map("users")
 }
@@ -104,4 +105,17 @@ model Attachment {
   Answer   Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
 
   @@map("Attachments")
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  readAt      DateTime? @map("read_at")
+  recipientId String
+
+  recipient User @relation(fields: [recipientId], references: [id])
+
+  @@map("Notifications")
 }
