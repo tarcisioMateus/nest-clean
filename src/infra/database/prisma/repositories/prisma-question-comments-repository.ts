@@ -6,6 +6,7 @@ import { PrismaQuestionCommentMapper } from '../mapper/prisma-question-comment-m
 import { CommentWithAuthor } from '@/domain/forum/enterprise/entities/value-objects/comment-with-author'
 import { PrismaCommentWithAuthorMapper } from '../mapper/prisma-comment-with-author-mapper'
 import { LoadingParams } from '@/core/repositories/loading-params'
+import { DomainEvents } from '@/core/events/domain-events'
 
 @Injectable()
 export class PrismaQuestionCommentsRepository
@@ -62,6 +63,8 @@ export class PrismaQuestionCommentsRepository
     await this.prisma.comment.create({
       data,
     })
+
+    DomainEvents.dispatchEventsForAggregate(questionComment.id)
   }
 
   async delete(questionComment: QuestionComment): Promise<void> {

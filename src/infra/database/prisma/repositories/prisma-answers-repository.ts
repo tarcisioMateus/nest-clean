@@ -7,6 +7,7 @@ import { AnswerAttachmentsRepository } from '@/domain/forum/application/reposito
 import { LoadingParams } from '@/core/repositories/loading-params'
 import { AnswerWithDetails } from '@/domain/forum/enterprise/entities/value-objects/answer-with-details'
 import { PrismaAnswerWithDetailsMapper } from '../mapper/prisma-answer-with-details-mapper'
+import { DomainEvents } from '@/core/events/domain-events'
 
 @Injectable()
 export class PrismaAnswersRepository implements AnswersRepository {
@@ -94,6 +95,8 @@ export class PrismaAnswersRepository implements AnswersRepository {
     await this.answerAttachmentsRepository.createMany(
       answer.attachments.getItems(),
     )
+
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
   async save(answer: Answer): Promise<void> {
