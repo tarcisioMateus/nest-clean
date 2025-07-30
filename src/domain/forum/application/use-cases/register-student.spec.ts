@@ -1,17 +1,19 @@
 import { RegisterStudentUseCase } from './register-student'
 import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
 import { InMemoryHasher } from 'test/cryptography/in-memory-hasher'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryStudentsRepository: InMemoryStudentsRepository
+let studentsRepository: InMemoryStudentsRepository
 let inMemoryHasher: InMemoryHasher
 let sut: RegisterStudentUseCase
 
 describe('Register Student', () => {
   beforeEach(() => {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
+    const { inMemoryStudentsRepository } = GetAllInMemoryRepositories.execute()
+    studentsRepository = inMemoryStudentsRepository
     inMemoryHasher = new InMemoryHasher()
 
-    sut = new RegisterStudentUseCase(inMemoryStudentsRepository, inMemoryHasher)
+    sut = new RegisterStudentUseCase(studentsRepository, inMemoryHasher)
   })
 
   it('should be able to register an student, with hashed password', async () => {

@@ -3,25 +3,24 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { DeleteQuestionCommentUseCase } from './delete-question-comment'
 import { makeQuestionComment } from 'test/factories/make-question-comment'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
-import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryStudentsRepository: InMemoryStudentsRepository
-let inMemoryQuestionCommentsRepository: InMemoryQuestionCommentsRepository
+let questionCommentsRepository: InMemoryQuestionCommentsRepository
 let sut: DeleteQuestionCommentUseCase
 
 describe('Delete Question Comment', () => {
   beforeEach(() => {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
-    inMemoryQuestionCommentsRepository = new InMemoryQuestionCommentsRepository(
-      inMemoryStudentsRepository,
-    )
-    sut = new DeleteQuestionCommentUseCase(inMemoryQuestionCommentsRepository)
+    const { inMemoryQuestionCommentsRepository } =
+      GetAllInMemoryRepositories.execute()
+    questionCommentsRepository = inMemoryQuestionCommentsRepository
+
+    sut = new DeleteQuestionCommentUseCase(questionCommentsRepository)
   })
 
   it('should be able to delete an question comment', async () => {
     const comment = makeQuestionComment()
 
-    await inMemoryQuestionCommentsRepository.create(comment)
+    await questionCommentsRepository.create(comment)
 
     const response = await sut.execute({
       authorId: comment.authorId.toString(),
@@ -30,7 +29,7 @@ describe('Delete Question Comment', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryQuestionCommentsRepository.items).toHaveLength(0)
+    expect(questionCommentsRepository.items).toHaveLength(0)
   })
 
   it('should Not be able to delete another user question comment', async () => {
@@ -38,7 +37,7 @@ describe('Delete Question Comment', () => {
       authorId: new UniqueEntityID('author-1'),
     })
 
-    await inMemoryQuestionCommentsRepository.create(comment)
+    await questionCommentsRepository.create(comment)
 
     const response = await sut.execute({
       authorId: 'author-2',
@@ -47,6 +46,6 @@ describe('Delete Question Comment', () => {
 
     expect(response.isLeft()).toBeTruthy()
     expect(response.value).toBeInstanceOf(NotAllowedError)
-    expect(inMemoryQuestionCommentsRepository.items).toHaveLength(1)
+    expect(questionCommentsRepository.items).toHaveLength(1)
   })
 })

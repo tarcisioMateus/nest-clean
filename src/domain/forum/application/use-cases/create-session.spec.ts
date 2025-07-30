@@ -3,20 +3,23 @@ import { InMemoryHasher } from 'test/cryptography/in-memory-hasher'
 import { CreateSessionUseCase } from './create-session'
 import { InMemoryEncrypter } from 'test/cryptography/in-memory-encrypter'
 import { makeStudent } from 'test/factories/make-student'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryStudentsRepository: InMemoryStudentsRepository
+let studentsRepository: InMemoryStudentsRepository
 let inMemoryHasher: InMemoryHasher
 let inMemoryEncrypter: InMemoryEncrypter
 let sut: CreateSessionUseCase
 
 describe('Create Session', () => {
   beforeEach(() => {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
+    const { inMemoryStudentsRepository } = GetAllInMemoryRepositories.execute()
+    studentsRepository = inMemoryStudentsRepository
+
     inMemoryHasher = new InMemoryHasher()
     inMemoryEncrypter = new InMemoryEncrypter()
 
     sut = new CreateSessionUseCase(
-      inMemoryStudentsRepository,
+      studentsRepository,
       inMemoryHasher,
       inMemoryEncrypter,
     )
@@ -27,7 +30,7 @@ describe('Create Session', () => {
       password: await inMemoryHasher.hash('123456'),
     })
 
-    await inMemoryStudentsRepository.create(student)
+    await studentsRepository.create(student)
 
     const response = await sut.execute({
       email: student.email,
@@ -37,6 +40,12 @@ describe('Create Session', () => {
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual({
       token: expect.any(String),
+      studentDetails: {
+        props: expect.objectContaining({
+          student: expect.objectContaining({ email: student.email }),
+          notifications: { pendent: 0 },
+        }),
+      },
     })
   })
 })

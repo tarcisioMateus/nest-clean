@@ -5,28 +5,32 @@ import { InvalidAttachmentFileTypeError } from './errors/invalid-attachment-file
 import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
 import { makeStudent } from 'test/factories/make-student'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryStudentsRepository: InMemoryStudentsRepository
-let inMemoryAttachmentsRepository: InMemoryAttachmentsRepository
+let studentsRepository: InMemoryStudentsRepository
+let attachmentsRepository: InMemoryAttachmentsRepository
 let fakeUploader: FakeUploader
 let sut: UploadAndCreateAttachmentUseCase
 
 describe('Upload and Create Attachment', () => {
   beforeEach(() => {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
-    inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository()
+    const { inMemoryStudentsRepository, inMemoryAttachmentsRepository } =
+      GetAllInMemoryRepositories.execute()
+    studentsRepository = inMemoryStudentsRepository
+    attachmentsRepository = inMemoryAttachmentsRepository
+
     fakeUploader = new FakeUploader()
 
     sut = new UploadAndCreateAttachmentUseCase(
-      inMemoryStudentsRepository,
-      inMemoryAttachmentsRepository,
+      studentsRepository,
+      attachmentsRepository,
       fakeUploader,
     )
   })
 
   it('should be able upload an attachment', async () => {
     const student = makeStudent()
-    await inMemoryStudentsRepository.create(student)
+    await studentsRepository.create(student)
 
     const response = await sut.execute({
       body: Buffer.from(''),
@@ -37,7 +41,7 @@ describe('Upload and Create Attachment', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual({
-      attachment: inMemoryAttachmentsRepository.items[0],
+      attachment: attachmentsRepository.items[0],
     })
 
     expect(fakeUploader.items).toHaveLength(1)
@@ -49,7 +53,7 @@ describe('Upload and Create Attachment', () => {
 
   it('should NOT be able upload an attachment with wrong type', async () => {
     const student = makeStudent()
-    await inMemoryStudentsRepository.create(student)
+    await studentsRepository.create(student)
 
     const response = await sut.execute({
       body: Buffer.from(''),

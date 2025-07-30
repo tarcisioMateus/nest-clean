@@ -3,25 +3,25 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { DeleteAnswerCommentUseCase } from './delete-answer-comment'
 import { makeAnswerComment } from 'test/factories/make-answer-comment'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
-import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
+import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
 
-let inMemoryStudentsRepository: InMemoryStudentsRepository
-let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository
+let answerCommentsRepository: InMemoryAnswerCommentsRepository
 let sut: DeleteAnswerCommentUseCase
 
 describe('Delete Answer Comment', () => {
   beforeEach(() => {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository(
-      inMemoryStudentsRepository,
-    )
-    sut = new DeleteAnswerCommentUseCase(inMemoryAnswerCommentsRepository)
+    const { inMemoryAnswerCommentsRepository } =
+      GetAllInMemoryRepositories.execute()
+
+    answerCommentsRepository = inMemoryAnswerCommentsRepository
+
+    sut = new DeleteAnswerCommentUseCase(answerCommentsRepository)
   })
 
   it('should be able to delete an answer comment', async () => {
     const comment = makeAnswerComment()
 
-    await inMemoryAnswerCommentsRepository.create(comment)
+    await answerCommentsRepository.create(comment)
 
     const response = await sut.execute({
       authorId: comment.authorId.toString(),
@@ -30,7 +30,7 @@ describe('Delete Answer Comment', () => {
 
     expect(response.isRight()).toBeTruthy()
     expect(response.value).toEqual(null)
-    expect(inMemoryAnswerCommentsRepository.items).toHaveLength(0)
+    expect(answerCommentsRepository.items).toHaveLength(0)
   })
 
   it('should Not be able to delete another user answer comment', async () => {
@@ -38,7 +38,7 @@ describe('Delete Answer Comment', () => {
       authorId: new UniqueEntityID('author-1'),
     })
 
-    await inMemoryAnswerCommentsRepository.create(comment)
+    await answerCommentsRepository.create(comment)
 
     const response = await sut.execute({
       authorId: 'author-2',
@@ -47,6 +47,6 @@ describe('Delete Answer Comment', () => {
 
     expect(response.isLeft()).toBeTruthy()
     expect(response.value).toBeInstanceOf(NotAllowedError)
-    expect(inMemoryAnswerCommentsRepository.items).toHaveLength(1)
+    expect(answerCommentsRepository.items).toHaveLength(1)
   })
 })

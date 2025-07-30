@@ -4,6 +4,7 @@ import { CredentialsError } from './errors/credentials-error'
 import { HashCompare } from '../cryptography/hash-compare'
 import { Encrypter } from '../cryptography/encrypter'
 import { Injectable } from '@nestjs/common'
+import { StudentWithDetails } from '../../enterprise/entities/value-objects/student-with-details'
 
 interface CreateSessionUseCaseRequest {
   email: string
@@ -14,6 +15,7 @@ type CreateSessionUseCaseResponse = Either<
   CredentialsError,
   {
     token: string
+    studentDetails: StudentWithDetails
   }
 >
 
@@ -29,7 +31,7 @@ export class CreateSessionUseCase {
     email,
     password,
   }: CreateSessionUseCaseRequest): Promise<CreateSessionUseCaseResponse> {
-    const user = await this.studentsRepository.findByEmail(email)
+    const user = await this.studentsRepository.findDetailsByEmail(email)
 
     if (!user) {
       return left(new CredentialsError())
@@ -37,15 +39,17 @@ export class CreateSessionUseCase {
 
     const passwordMatch = await this.hashCompare.compare(
       password,
-      user.password,
+      user.studentPassword,
     )
 
     if (!passwordMatch) {
       return left(new CredentialsError())
     }
 
-    const token = await this.encrypter.encrypt({ sub: user.id.toValue() })
+    const token = await this.encrypter.encrypt({
+      sub: user.studentId.toValue(),
+    })
 
-    return right({ token })
+    return right({ token, studentDetails: user })
   }
 }

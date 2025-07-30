@@ -20,7 +20,10 @@ let inMemoryNotificationsRepository: InMemoryNotificationsRepository
 
 export class GetAllInMemoryRepositories {
   static execute() {
-    inMemoryStudentsRepository = new InMemoryStudentsRepository()
+    inMemoryNotificationsRepository = new InMemoryNotificationsRepository()
+    inMemoryStudentsRepository = new InMemoryStudentsRepository(
+      inMemoryNotificationsRepository,
+    )
     inMemoryAttachmentsRepository = new InMemoryAttachmentsRepository()
     inMemoryAnswerAttachmentsRepository =
       new InMemoryAnswerAttachmentsRepository()
@@ -45,8 +48,6 @@ export class GetAllInMemoryRepositories {
       inMemoryAnswersRepository,
       inMemoryStudentsRepository,
     )
-
-    inMemoryNotificationsRepository = new InMemoryNotificationsRepository()
 
     return {
       inMemoryStudentsRepository,
