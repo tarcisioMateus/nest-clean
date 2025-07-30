@@ -27,7 +27,11 @@ describe('Read Notification', () => {
     })
 
     expect(response.isRight()).toBeTruthy()
-    expect(response.value).toEqual(null)
+    expect(response.value).toEqual({
+      notification: expect.objectContaining({
+        recipientId: notification.recipientId,
+      }),
+    })
     expect(inMemoryNotificationsRepository.items[0].readAt).toBeInstanceOf(Date)
   })
 
