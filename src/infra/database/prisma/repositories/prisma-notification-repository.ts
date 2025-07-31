@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { PrismaNotificationMapper } from '../mapper/prisma-notification-mapper'
 import { NotificationsRepository } from '@/domain/notification/application/repositories/notification-repository'
+import { LoadingParams } from '@/core/repositories/loading-params'
 
 @Injectable()
 export class PrismaNotificationsRepository implements NotificationsRepository {
@@ -18,6 +19,25 @@ export class PrismaNotificationsRepository implements NotificationsRepository {
     }
 
     return PrismaNotificationMapper.toDomain(notification)
+  }
+
+  async findManyRecentByRecipientId(
+    recipientId: string,
+    { loading, perLoading }: LoadingParams,
+  ): Promise<Notification[]> {
+    const notifications = await this.prisma.notification.findMany({
+      where: { recipientId },
+      orderBy: {
+        readAt: {
+          sort: 'desc',
+          nulls: 'first',
+        },
+      },
+      skip: (loading - 1) * perLoading,
+      take: perLoading,
+    })
+
+    return notifications.map(PrismaNotificationMapper.toDomain)
   }
 
   async create(notification: Notification): Promise<void> {

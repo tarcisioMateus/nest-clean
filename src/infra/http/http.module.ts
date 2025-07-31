@@ -63,6 +63,9 @@ import { UploadAndCreateAttachmentUseCase } from '@/domain/forum/application/use
 import { ReadNotificationController } from './controllers/read-notification.controller'
 import { ReadNotificationUseCase } from '@/domain/notification/application/use-cases/read-notification'
 
+import { FetchRecentNotificationsController } from './controllers/fetch-recent-notifications.controller'
+import { FetchRecentNotificationUseCase } from '@/domain/notification/application/use-cases/fetch-recent-notifications'
+
 @Module({
   imports: [DatabaseModule, CryptographyModule, StorageModule],
   controllers: [
@@ -86,6 +89,7 @@ import { ReadNotificationUseCase } from '@/domain/notification/application/use-c
     FetchAnswerCommentsController,
     UploadAttachmentController,
     ReadNotificationController,
+    FetchRecentNotificationsController,
   ],
   providers: [
     RegisterStudentUseCase,
@@ -108,6 +112,7 @@ import { ReadNotificationUseCase } from '@/domain/notification/application/use-c
     FetchAnswerCommentsUseCase,
     UploadAndCreateAttachmentUseCase,
     ReadNotificationUseCase,
+    FetchRecentNotificationUseCase,
   ],
 })
 export class HttpModule {}

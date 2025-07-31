@@ -7,6 +7,7 @@ export class NotificationPresenter {
       title: notification.title,
       content: notification.content,
       created_at: notification.createdAt,
+      readAt: notification.readAt,
     }
   }
 }

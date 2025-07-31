@@ -27,8 +27,8 @@ export class FetchAnswerCommentsUseCase {
 
   async execute({
     answerId,
-    loading = DEFAULT_LOADING,
-    perLoading = DEFAULT_PER_LOADING,
+    loading,
+    perLoading,
   }: Optional<
     FetchAnswerCommentsUseCaseRequest,
     'loading' | 'perLoading'
@@ -37,8 +37,8 @@ export class FetchAnswerCommentsUseCase {
       await this.answerCommentsRepository.findManyByAnswerIdWithAuthor(
         answerId,
         {
-          loading,
-          perLoading,
+          loading: loading ?? DEFAULT_LOADING,
+          perLoading: perLoading ?? DEFAULT_PER_LOADING,
         },
       )
 

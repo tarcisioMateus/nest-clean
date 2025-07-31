@@ -27,16 +27,16 @@ export class FetchQuestionAnswersUseCase {
 
   async execute({
     questionId,
-    loading = DEFAULT_LOADING,
-    perLoading = DEFAULT_PER_LOADING,
+    loading,
+    perLoading,
   }: Optional<
     FetchQuestionAnswersUseCaseRequest,
     'loading' | 'perLoading'
   >): Promise<FetchQuestionAnswersUseCaseResponse> {
     const answers =
       await this.answersRepository.findManyByQuestionIdWithDetails(questionId, {
-        loading,
-        perLoading,
+        loading: loading ?? DEFAULT_LOADING,
+        perLoading: perLoading ?? DEFAULT_PER_LOADING,
       })
 
     if (!answers.length) {

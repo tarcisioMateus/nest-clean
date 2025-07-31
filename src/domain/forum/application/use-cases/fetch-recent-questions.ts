@@ -23,12 +23,12 @@ export class FetchRecentQuestionsUseCase {
   constructor(private questionsRepository: QuestionsRepository) {}
 
   async execute({
-    page = DEFAULT_PAGE,
-    perPage = DEFAULT_PER_PAGE,
+    page,
+    perPage,
   }: Partial<FetchRecentQuestionsUseCaseRequest>): Promise<FetchRecentQuestionsUseCaseResponse> {
     const questions = await this.questionsRepository.fetchManyRecent({
-      page,
-      perPage,
+      page: page ?? DEFAULT_PAGE,
+      perPage: perPage ?? DEFAULT_PER_PAGE,
     })
 
     if (!questions.length) {
