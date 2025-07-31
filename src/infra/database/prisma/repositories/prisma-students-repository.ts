@@ -3,6 +3,8 @@ import { Student } from '@/domain/forum/enterprise/entities/student'
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { PrismaStudentMapper } from '../mapper/prisma-student-mapper'
+import { StudentWithDetails } from '@/domain/forum/enterprise/entities/value-objects/student-with-details'
+import { PrismaStudentWithDetailsMapper } from '../mapper/prisma-student-with-details-mapper'
 
 @Injectable()
 export class PrismaStudentsRepository implements StudentsRepository {
@@ -30,6 +32,34 @@ export class PrismaStudentsRepository implements StudentsRepository {
     }
 
     return PrismaStudentMapper.toDomain(student)
+  }
+
+  async findDetailsByEmail(email: string): Promise<StudentWithDetails | null> {
+    const student = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+
+        _count: {
+          select: {
+            notifications: {
+              where: {
+                readAt: null,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!student) {
+      return null
+    }
+
+    return PrismaStudentWithDetailsMapper.toDomain(student)
   }
 
   async create(student: Student): Promise<void> {

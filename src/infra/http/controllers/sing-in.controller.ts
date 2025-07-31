@@ -11,6 +11,7 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { CreateSessionUseCase } from '@/domain/forum/application/use-cases/create-session'
 import { CredentialsError } from '@/domain/forum/application/use-cases/errors/credentials-error'
 import { Public } from '@/infra/auth/public'
+import { StudentWithDetailsPresenter } from '../presenter/student-with-details-presenter'
 
 const singInBodySchema = z.object({
   email: z.email().trim(),
@@ -42,8 +43,11 @@ export class SingInController {
       }
     }
 
-    const { token } = response.value
+    const { token, studentDetails } = response.value
 
-    return { token }
+    return {
+      token,
+      studentDetails: StudentWithDetailsPresenter.toHttp(studentDetails),
+    }
   }
 }
