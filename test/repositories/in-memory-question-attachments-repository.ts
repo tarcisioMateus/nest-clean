@@ -1,10 +1,15 @@
 import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository'
 import { QuestionAttachment } from '@/domain/forum/enterprise/entities/question-attachment'
 import { QuestionAttachmentList } from '@/domain/forum/enterprise/entities/question-attachment-list'
+import { InMemoryAttachmentsRepository } from './in-memory-attachments-repository'
 
 export class InMemoryQuestionAttachmentsRepository
   implements QuestionAttachmentsRepository
 {
+  constructor(
+    private readonly attachmentsRepository: InMemoryAttachmentsRepository,
+  ) {}
+
   public items: QuestionAttachment[] = []
 
   async findManyByQuestionId(
@@ -18,6 +23,11 @@ export class InMemoryQuestionAttachmentsRepository
   }
 
   async deleteManyByQuestionId(questionId: string): Promise<void> {
+    this.items.map(async (item) => {
+      if (item.questionId.toString() === questionId) {
+        await this.attachmentsRepository.deleteById(item.id.toString())
+      }
+    })
     this.items = this.items.filter(
       (item) => item.questionId.toString() !== questionId,
     )
@@ -33,6 +43,7 @@ export class InMemoryQuestionAttachmentsRepository
         (item) => item.id.toValue() === attachment.id.toValue(),
       )
 
+      await this.attachmentsRepository.deleteById(attachment.id.toString())
       this.items.splice(attachmentIndex, 1)
     }
   }

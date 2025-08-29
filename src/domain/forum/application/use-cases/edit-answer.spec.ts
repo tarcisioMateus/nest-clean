@@ -7,20 +7,30 @@ import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory
 import { makeAnswerAttachment } from 'test/factories/make-answer-attachment'
 import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
 import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
+import { InMemoryAttachmentsRepository } from 'test/repositories/in-memory-attachments-repository'
 
 let answerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
 let answersRepository: InMemoryAnswersRepository
+let attachmentsRepository: InMemoryAttachmentsRepository
 let sut: EditAnswerUseCase
 
 describe('Edit Answer', () => {
   beforeEach(() => {
-    const { inMemoryAnswerAttachmentsRepository, inMemoryAnswersRepository } =
-      GetAllInMemoryRepositories.execute()
+    const {
+      inMemoryAnswerAttachmentsRepository,
+      inMemoryAnswersRepository,
+      inMemoryAttachmentsRepository,
+    } = GetAllInMemoryRepositories.execute()
 
     answerAttachmentsRepository = inMemoryAnswerAttachmentsRepository
     answersRepository = inMemoryAnswersRepository
+    attachmentsRepository = inMemoryAttachmentsRepository
 
-    sut = new EditAnswerUseCase(answersRepository, answerAttachmentsRepository)
+    sut = new EditAnswerUseCase(
+      answersRepository,
+      answerAttachmentsRepository,
+      attachmentsRepository,
+    )
   })
 
   it('should be able to edit an answer', async () => {

@@ -7,21 +7,31 @@ import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory
 import { makeAnswerAttachment } from 'test/factories/make-answer-attachment'
 import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
 import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
+import { InMemoryAttachmentsRepository } from 'test/repositories/in-memory-attachments-repository'
 
 let answersRepository: InMemoryAnswersRepository
 let answerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
+let attachmentsRepository: InMemoryAttachmentsRepository
 
 let sut: DeleteAnswerUseCase
 
 describe('Delete Answer', () => {
   beforeEach(() => {
-    const { inMemoryAnswerAttachmentsRepository, inMemoryAnswersRepository } =
-      GetAllInMemoryRepositories.execute()
+    const {
+      inMemoryAnswerAttachmentsRepository,
+      inMemoryAnswersRepository,
+      inMemoryAttachmentsRepository,
+    } = GetAllInMemoryRepositories.execute()
 
     answerAttachmentsRepository = inMemoryAnswerAttachmentsRepository
     answersRepository = inMemoryAnswersRepository
+    attachmentsRepository = inMemoryAttachmentsRepository
 
-    sut = new DeleteAnswerUseCase(answersRepository)
+    sut = new DeleteAnswerUseCase(
+      answersRepository,
+      answerAttachmentsRepository,
+      attachmentsRepository,
+    )
   })
 
   it('should be able to delete an answer', async () => {

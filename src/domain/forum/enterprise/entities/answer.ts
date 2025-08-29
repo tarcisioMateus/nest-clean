@@ -3,6 +3,8 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { Optional } from '@/core/types/optional'
 import { AnswerAttachmentList } from './answer-attachment-list'
 import { AnswerCreatedEvent } from '../events/answer-created-event'
+import { AttachmentsRemovedEvent } from '../events/attachments-removed-event'
+import { Attachment } from './attachment'
 
 export interface AnswerProps {
   authorId: UniqueEntityID
@@ -54,6 +56,12 @@ export class Answer extends AggregateRoot<AnswerProps> {
   set attachments(attachments: AnswerAttachmentList) {
     this.props.attachments = attachments
     this.touch()
+  }
+
+  public addDomainEventForRemovedAttachments(removedAttachments: Attachment[]) {
+    if (removedAttachments.length > 0) {
+      this.addDomainEvent(new AttachmentsRemovedEvent(this, removedAttachments))
+    }
   }
 
   static create(

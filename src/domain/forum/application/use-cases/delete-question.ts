@@ -3,6 +3,9 @@ import { Either, left, right } from '@/core/either'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { Injectable } from '@nestjs/common'
+import { QuestionAttachmentsRepository } from '../repositories/question-attachments-repository'
+import { AttachmentsRepository } from '../repositories/attachments-repository'
+import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
 
 interface DeleteQuestionUseCaseRequest {
   questionId: string
@@ -16,7 +19,11 @@ type DeleteQuestionUseCaseResponse = Either<
 
 @Injectable()
 export class DeleteQuestionUseCase {
-  constructor(private questionsRepository: QuestionsRepository) {}
+  constructor(
+    private questionsRepository: QuestionsRepository,
+    private questionAttachmentsRepository: QuestionAttachmentsRepository,
+    private attachmentsRepository: AttachmentsRepository,
+  ) {}
 
   async execute({
     questionId,
@@ -31,6 +38,19 @@ export class DeleteQuestionUseCase {
     if (question.authorId.toString() !== authorId) {
       return left(new NotAllowedError())
     }
+
+    const attachments =
+      await this.questionAttachmentsRepository.findManyByQuestionId(questionId)
+    question.attachments = new QuestionAttachmentList(attachments)
+    question.attachments.update([])
+
+    const removedAttachmentsIds = attachments.map((attachment) => {
+      return attachment.id.toString()
+    })
+    const removedAttachments = await this.attachmentsRepository.findManyByIds(
+      removedAttachmentsIds,
+    )
+    question.addDomainEventForRemovedAttachments(removedAttachments)
 
     await this.questionsRepository.delete(question)
 

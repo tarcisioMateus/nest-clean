@@ -1,4 +1,8 @@
 import {
+  DeleteFile,
+  deleteFileParams,
+} from '@/domain/forum/application/storage/delete-file'
+import {
   Uploader,
   uploadParams,
 } from '@/domain/forum/application/storage/uploader'
@@ -9,7 +13,7 @@ interface UploadType {
   url: string
 }
 
-export class FakeUploader implements Uploader {
+export class FakeUploader implements Uploader, DeleteFile {
   public items: UploadType[] = []
 
   async upload({ fileName }: uploadParams): Promise<{ url: string }> {
@@ -21,5 +25,9 @@ export class FakeUploader implements Uploader {
     })
 
     return { url }
+  }
+
+  async deleteFile({ url }: deleteFileParams): Promise<void> {
+    this.items = this.items.filter((item) => item.url !== url)
   }
 }

@@ -5,6 +5,8 @@ import { Optional } from '@/core/types/optional'
 import dayjs from 'dayjs'
 import { QuestionAttachmentList } from './question-attachment-list'
 import { QuestionBestAnswerChosenEvent } from '../events/question-best-answer-chosen-event'
+import { AttachmentsRemovedEvent } from '../events/attachments-removed-event'
+import { Attachment } from './attachment'
 
 export interface QuestionProps {
   authorId: UniqueEntityID
@@ -91,6 +93,12 @@ export class Question extends AggregateRoot<QuestionProps> {
     }
     this.props.bestAnswerID = bestAnswerID
     this.touch()
+  }
+
+  public addDomainEventForRemovedAttachments(removedAttachments: Attachment[]) {
+    if (removedAttachments.length > 0) {
+      this.addDomainEvent(new AttachmentsRemovedEvent(this, removedAttachments))
+    }
   }
 
   static create(

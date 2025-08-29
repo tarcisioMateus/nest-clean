@@ -7,13 +7,14 @@ import { AttachmentsRepository } from '../repositories/attachments-repository'
 import { StudentsRepository } from '../repositories/students-repository'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { UnableToMakeChangesError } from './errors/unable-to-make-changes-error'
 
 interface UploadAndCreateAttachmentUseCaseRequest extends uploadParams {
   authorId: string
 }
 
 type UploadAndCreateAttachmentUseCaseResponse = Either<
-  InvalidAttachmentFileTypeError | NotAllowedError,
+  InvalidAttachmentFileTypeError | NotAllowedError | UnableToMakeChangesError,
   {
     attachment: Attachment
   }
@@ -42,11 +43,19 @@ export class UploadAndCreateAttachmentUseCase {
       return left(new NotAllowedError())
     }
 
-    const { url } = await this.uploader.upload({
-      body,
-      fileName,
-      fileType,
-    })
+    let url: string
+
+    try {
+      const file = await this.uploader.upload({
+        body,
+        fileName,
+        fileType,
+      })
+      url = file.url
+    } catch (error) {
+      console.log(error)
+      return left(new UnableToMakeChangesError(`did NOT upload file to CLOUD`))
+    }
 
     const attachment = Attachment.create({
       title: fileName,

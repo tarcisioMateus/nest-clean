@@ -121,6 +121,8 @@ export class InMemoryAnswersRepository implements AnswersRepository {
 
     this.items[answerIndex] = answer
     this.answerAttachmentsRepository.save(answer.attachments)
+
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
   async delete(answer: Answer): Promise<void> {
@@ -130,5 +132,7 @@ export class InMemoryAnswersRepository implements AnswersRepository {
 
     this.items.splice(answerIndex, 1)
     this.answerAttachmentsRepository.deleteManyByAnswerId(answer.id.toString())
+
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 }

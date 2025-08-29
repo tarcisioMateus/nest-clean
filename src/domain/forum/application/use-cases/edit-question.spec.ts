@@ -7,9 +7,11 @@ import { InMemoryQuestionAttachmentsRepository } from 'test/repositories/in-memo
 import { makeQuestionAttachment } from 'test/factories/make-question-attachment'
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
 import { GetAllInMemoryRepositories } from 'test/repositories/get-all-in-memory-repository'
+import { InMemoryAttachmentsRepository } from 'test/repositories/in-memory-attachments-repository'
 
 let questionsRepository: InMemoryQuestionsRepository
 let questionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
+let attachmentsRepository: InMemoryAttachmentsRepository
 
 let sut: EditQuestionUseCase
 
@@ -18,14 +20,17 @@ describe('Edit Question', () => {
     const {
       inMemoryQuestionAttachmentsRepository,
       inMemoryQuestionsRepository,
+      inMemoryAttachmentsRepository,
     } = GetAllInMemoryRepositories.execute()
 
     questionsRepository = inMemoryQuestionsRepository
     questionAttachmentsRepository = inMemoryQuestionAttachmentsRepository
+    attachmentsRepository = inMemoryAttachmentsRepository
 
     sut = new EditQuestionUseCase(
       questionsRepository,
       questionAttachmentsRepository,
+      attachmentsRepository,
     )
   })
 

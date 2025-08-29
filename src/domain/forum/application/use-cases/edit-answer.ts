@@ -7,6 +7,7 @@ import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachmen
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { AnswerAttachment } from '../../enterprise/entities/answer-attachment'
 import { Injectable } from '@nestjs/common'
+import { AttachmentsRepository } from '../repositories/attachments-repository'
 
 interface EditAnswerUseCaseRequest {
   answerId: string
@@ -25,6 +26,7 @@ export class EditAnswerUseCase {
   constructor(
     private answersRepository: AnswersRepository,
     private answerAttachmentsRepository: AnswerAttachmentsRepository,
+    private attachmentsRepository: AttachmentsRepository,
   ) {}
 
   async execute({
@@ -54,8 +56,18 @@ export class EditAnswerUseCase {
       }),
     )
 
-    answer.attachments.update(updatedAttachments)
     answer.content = content
+    answer.attachments.update(updatedAttachments)
+
+    const removedAttachmentsIds = answer.attachments
+      .getRemovedItems()
+      .map((attachment) => {
+        return attachment.id.toString()
+      })
+    const removedAttachments = await this.attachmentsRepository.findManyByIds(
+      removedAttachmentsIds,
+    )
+    answer.addDomainEventForRemovedAttachments(removedAttachments)
 
     await this.answersRepository.save(answer)
 

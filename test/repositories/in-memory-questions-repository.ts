@@ -151,5 +151,7 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     this.questionAttachmentsRepository.deleteManyByQuestionId(
       question.id.toString(),
     )
+
+    DomainEvents.dispatchEventsForAggregate(question.id)
   }
 }

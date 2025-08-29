@@ -3,6 +3,9 @@ import { AnswersRepository } from '../repositories/answers-repository'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
+import { AnswerAttachmentsRepository } from '../repositories/answer-attachments-repository'
+import { AttachmentsRepository } from '../repositories/attachments-repository'
+import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
 
 interface DeleteAnswerUseCaseRequest {
   answerId: string
@@ -16,7 +19,11 @@ type DeleteAnswerUseCaseResponse = Either<
 
 @Injectable()
 export class DeleteAnswerUseCase {
-  constructor(private answersRepository: AnswersRepository) {}
+  constructor(
+    private answersRepository: AnswersRepository,
+    private answerAttachmentsRepository: AnswerAttachmentsRepository,
+    private attachmentsRepository: AttachmentsRepository,
+  ) {}
 
   async execute({
     answerId,
@@ -31,6 +38,19 @@ export class DeleteAnswerUseCase {
     if (answer.authorId.toString() !== authorId) {
       return left(new NotAllowedError())
     }
+
+    const attachments =
+      await this.answerAttachmentsRepository.findManyByAnswerId(answerId)
+    answer.attachments = new AnswerAttachmentList(attachments)
+    answer.attachments.update([])
+
+    const removedAttachmentsIds = attachments.map((attachment) => {
+      return attachment.id.toString()
+    })
+    const removedAttachments = await this.attachmentsRepository.findManyByIds(
+      removedAttachmentsIds,
+    )
+    answer.addDomainEventForRemovedAttachments(removedAttachments)
 
     await this.answersRepository.delete(answer)
 

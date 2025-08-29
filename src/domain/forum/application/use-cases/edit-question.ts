@@ -7,6 +7,7 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { QuestionAttachmentsRepository } from '../repositories/question-attachments-repository'
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
 import { Injectable } from '@nestjs/common'
+import { AttachmentsRepository } from '../repositories/attachments-repository'
 
 interface EditQuestionUseCaseRequest {
   questionId: string
@@ -26,6 +27,7 @@ export class EditQuestionUseCase {
   constructor(
     private questionsRepository: QuestionsRepository,
     private questionAttachmentsRepository: QuestionAttachmentsRepository,
+    private attachmentsRepository: AttachmentsRepository,
   ) {}
 
   async execute({
@@ -56,9 +58,19 @@ export class EditQuestionUseCase {
       }),
     )
 
-    question.attachments.update(updatedAttachments)
     question.title = title
     question.content = content
+    question.attachments.update(updatedAttachments)
+
+    const removedAttachmentsIds = question.attachments
+      .getRemovedItems()
+      .map((attachment) => {
+        return attachment.id.toString()
+      })
+    const removedAttachments = await this.attachmentsRepository.findManyByIds(
+      removedAttachmentsIds,
+    )
+    question.addDomainEventForRemovedAttachments(removedAttachments)
 
     await this.questionsRepository.save(question)
 
