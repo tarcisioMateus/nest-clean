@@ -6,15 +6,18 @@ import { OnAnswerCreated } from '@/domain/notification/application/subscribers/o
 import { OnQuestionBestAnswerChosen } from '@/domain/notification/application/subscribers/on-question-best-answer-chosen'
 import { OnQuestionCommentCreated } from '@/domain/notification/application/subscribers/on-question-comment-created'
 import { SendNotificationUseCase } from '@/domain/notification/application/use-cases/send-notification'
+import { StorageModule } from '../storage/storage.module'
+import { OnAttachmentsRemoved } from '@/domain/forum/application/subscribers/on-attachments-removed'
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, StorageModule],
   providers: [
     OnAnswerCommentCreated,
     OnAnswerCreated,
     OnQuestionBestAnswerChosen,
     OnQuestionCommentCreated,
     SendNotificationUseCase,
+    OnAttachmentsRemoved,
   ],
 })
 export class EventsModule {}

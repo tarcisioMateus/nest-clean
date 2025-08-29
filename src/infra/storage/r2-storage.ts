@@ -3,12 +3,20 @@ import {
   Uploader,
   uploadParams,
 } from '@/domain/forum/application/storage/uploader'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3'
 import { EnvService } from '../env/env.service'
 import { randomUUID } from 'node:crypto'
+import {
+  DeleteFile,
+  deleteFileParams,
+} from '@/domain/forum/application/storage/delete-file'
 
 @Injectable()
-export class R2Storage implements Uploader {
+export class R2Storage implements Uploader, DeleteFile {
   private client: S3Client
 
   constructor(private readonly env: EnvService) {
@@ -41,5 +49,19 @@ export class R2Storage implements Uploader {
     )
 
     return { url: uniqueFileName }
+  }
+
+  async deleteFile({ url: uniqueFileName }: deleteFileParams): Promise<void> {
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.env.get('AWS_BUCKET_NAME'),
+          Key: uniqueFileName,
+        }),
+      )
+    } catch (error) {
+      console.error(`Error deleting file: ${uniqueFileName}`, error)
+      throw error
+    }
   }
 }

@@ -15,4 +15,23 @@ export class PrismaAttachmentsRepository implements AttachmentsRepository {
       data,
     })
   }
+
+  async deleteById(id: string): Promise<void> {
+    await this.prisma.attachment.delete({
+      where: {
+        id,
+      },
+    })
+  }
+
+  async findManyByIds(ids: string[]): Promise<Attachment[]> {
+    const attachments = await this.prisma.attachment.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    })
+    return attachments.map(PrismaAttachmentMapper.toDomain)
+  }
 }

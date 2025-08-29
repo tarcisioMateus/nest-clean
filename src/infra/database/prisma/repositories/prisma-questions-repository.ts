@@ -128,5 +128,6 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     await this.prisma.question.delete({
       where: { id: question.id.toString() },
     })
+    DomainEvents.dispatchEventsForAggregate(question.id)
   }
 }

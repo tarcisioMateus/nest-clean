@@ -108,11 +108,13 @@ export class PrismaAnswersRepository implements AnswersRepository {
     })
 
     await this.answerAttachmentsRepository.save(answer.attachments)
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
   async delete(answer: Answer): Promise<void> {
     await this.prisma.answer.delete({
       where: { id: answer.id.toString() },
     })
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 }
