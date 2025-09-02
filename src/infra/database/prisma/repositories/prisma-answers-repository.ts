@@ -8,12 +8,14 @@ import { LoadingParams } from '@/core/repositories/loading-params'
 import { AnswerWithDetails } from '@/domain/forum/enterprise/entities/value-objects/answer-with-details'
 import { PrismaAnswerWithDetailsMapper } from '../mapper/prisma-answer-with-details-mapper'
 import { DomainEvents } from '@/core/events/domain-events'
+import { CacheRepository } from '@/infra/cache/cache-repository'
 
 @Injectable()
 export class PrismaAnswersRepository implements AnswersRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly answerAttachmentsRepository: AnswerAttachmentsRepository,
+    private readonly cache: CacheRepository,
   ) {}
 
   async findById(id: string): Promise<Answer | null> {
@@ -44,6 +46,14 @@ export class PrismaAnswersRepository implements AnswersRepository {
     questionId: string,
     { loading, perLoading }: LoadingParams,
   ): Promise<AnswerWithDetails[]> {
+    const cacheHit = await this.cache.get(
+      `question:${questionId}:answersLoading:${loading}`,
+    )
+    if (cacheHit) {
+      const cacheData = JSON.parse(cacheHit)
+      return cacheData.map(PrismaAnswerWithDetailsMapper.toDomain)
+    }
+
     const answers = await this.prisma.answer.findMany({
       where: { questionId },
       select: {
@@ -82,6 +92,11 @@ export class PrismaAnswersRepository implements AnswersRepository {
       skip: (loading - 1) * perLoading,
     })
 
+    await this.cache.set(
+      `question:${questionId}:answersLoading:${loading}`,
+      JSON.stringify(answers),
+    )
+
     return answers.map(PrismaAnswerWithDetailsMapper.toDomain)
   }
 
@@ -94,6 +109,10 @@ export class PrismaAnswersRepository implements AnswersRepository {
 
     await this.answerAttachmentsRepository.createMany(
       answer.attachments.getItems(),
+    )
+
+    await this.cache.delete(
+      `question:${answer.questionId.toString()}:answersLoading:*`,
     )
 
     DomainEvents.dispatchEventsForAggregate(answer.id)
@@ -115,6 +134,9 @@ export class PrismaAnswersRepository implements AnswersRepository {
     await this.prisma.answer.delete({
       where: { id: answer.id.toString() },
     })
+    await this.cache.delete(
+      `question:${answer.questionId.toString()}:answersLoading:*`,
+    )
     DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 }

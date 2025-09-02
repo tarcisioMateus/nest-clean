@@ -9,12 +9,14 @@ import { QuestionAttachmentsRepository } from '@/domain/forum/application/reposi
 import { QuestionWithDetails } from '@/domain/forum/enterprise/entities/value-objects/question-with-details'
 import { PrismaQuestionWithDetailsMapper } from '../mapper/prisma-question-with-details-mapper'
 import { DomainEvents } from '@/core/events/domain-events'
+import { CacheRepository } from '@/infra/cache/cache-repository'
 
 @Injectable()
 export class PrismaQuestionsRepository implements QuestionsRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly questionAttachmentsRepository: QuestionAttachmentsRepository,
+    private readonly cache: CacheRepository,
   ) {}
 
   async findById(id: string): Promise<Question | null> {
@@ -40,6 +42,12 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
   }
 
   async findDetailsBySlug(slug: Slug): Promise<QuestionWithDetails | null> {
+    const cacheHit = await this.cache.get(`question:${slug.value}:details`)
+    if (cacheHit) {
+      const cacheData = JSON.parse(cacheHit)
+      return PrismaQuestionWithDetailsMapper.toDomain(cacheData)
+    }
+
     const question = await this.prisma.question.findUnique({
       where: { slug: slug.value }, // Use the string value of the slug
       select: {
@@ -83,6 +91,11 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
       return null
     }
 
+    await this.cache.set(
+      `question:${slug.value}:details`,
+      JSON.stringify(question),
+    )
+
     return PrismaQuestionWithDetailsMapper.toDomain(question)
   }
 
@@ -121,6 +134,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
 
     await this.questionAttachmentsRepository.save(question.attachments)
 
+    await this.cache.delete(`question:${question.slug.value}:details`)
+
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
 
@@ -128,6 +143,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     await this.prisma.question.delete({
       where: { id: question.id.toString() },
     })
+    await this.cache.delete(`question:${question.slug.value}:details`)
+
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
 }

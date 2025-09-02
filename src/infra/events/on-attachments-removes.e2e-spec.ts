@@ -9,12 +9,18 @@ import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { QuestionFactory } from 'test/factories/make-question'
 import { QuestionAttachmentFactory } from 'test/factories/make-question-attachment'
 import { DomainEvents } from '@/core/events/domain-events'
+import {
+  DeleteFile,
+  deleteFileParams,
+} from '@/domain/forum/application/storage/delete-file'
+import { MockInstance } from 'vitest'
 
 describe('On Attachments Removed E2E', () => {
   let app: INestApplication
   let jwt: JwtService
   let prisma: PrismaService
   let studentFactory: StudentFactory
+  let deleteFileSpy: MockInstance<(request: deleteFileParams) => Promise<void>>
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -26,6 +32,10 @@ describe('On Attachments Removed E2E', () => {
     studentFactory = moduleRef.get(StudentFactory)
     jwt = moduleRef.get(JwtService)
     prisma = moduleRef.get(PrismaService)
+
+    // 2. Get the real service instance and spy on its method
+    const deleteFileService = moduleRef.get(DeleteFile)
+    deleteFileSpy = vi.spyOn(deleteFileService, 'deleteFile')
 
     DomainEvents.shouldRun = true
 
@@ -53,6 +63,13 @@ describe('On Attachments Removed E2E', () => {
       attachmentId: expect.any(String),
     })
     const attachmentId: string = responseUploader.body.attachmentId
+    const attachment = await prisma.attachment.findUnique({
+      where: { id: attachmentId },
+    })
+    let url: string
+    if (attachment) {
+      url = attachment.link
+    }
 
     // create question and makes the relation with pre-existing attachments
     const responseCreateQuestion = await request(app.getHttpServer())
@@ -81,6 +98,10 @@ describe('On Attachments Removed E2E', () => {
         where: { id: question.id.toString() },
       })
       expect(deletedQuestion).toBeNull()
+
+      await vi.waitFor(() => {
+        expect(deleteFileSpy).toHaveBeenCalledWith({ url })
+      })
     }
   })
 })
